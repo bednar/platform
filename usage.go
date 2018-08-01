@@ -40,3 +40,26 @@ type Timespan struct {
 	Start time.Time `json:"start"`
 	Stop  time.Time `json:"stop"`
 }
+
+// QueryUsage are metrics recorded about a query.
+type QueryUsage struct {
+	OrganizationID ID
+	ResponseSize   int64
+	Error          error
+}
+
+// WriteUsage are metrics recorded about a data write.
+type WriteUsage struct {
+	OrganizationID ID
+	BucketID       ID
+	RequestSize    int
+	Error          error
+}
+
+// UsageRecorder records metrics for usage accounting.
+type UsageRecorder interface {
+	// Query accounts for a single query.
+	Query(QueryUsage) error
+	// Write accounts for a single write.
+	Write(WriteUsage) error
+}

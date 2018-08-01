@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	nethttp "net/http"
 	_ "net/http/pprof"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/influxdata/platform/chronograf/server"
 	"github.com/influxdata/platform/http"
 	"github.com/influxdata/platform/kit/prom"
+	"github.com/influxdata/platform/nats"
 	"github.com/influxdata/platform/query"
 	_ "github.com/influxdata/platform/query/builtin"
 	"github.com/influxdata/platform/query/control"
@@ -37,6 +39,13 @@ import (
 func main() {
 	Execute()
 }
+
+const (
+	// NatsSubject is the subject that subscribers and publishers use for writing and consuming line protocol
+	NatsSubject = "ingress"
+	// IngressGroup is the Nats Streaming Subscriber group, allowing multiple subscribers to distribute work
+	IngressGroup = "ingress"
+)
 
 var (
 	httpBindAddress   string
@@ -168,6 +177,26 @@ func platformF(cmd *cobra.Command, args []string) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM)
 
+	// NATS streaming server
+	_, err = nats.CreateServer()
+	if err != nil {
+		logger.Error("failed to start nats streaming server", zap.Error(err))
+		os.Exit(1)
+	}
+
+	publisher, err := nats.NewPublisher("nats-publisher")
+	if err != nil {
+		logger.Error("failed to connect to streaming server", zap.Error(err))
+		os.Exit(1)
+	}
+
+	// this is an example of using a subscriber to consume from the channel. It should be removed.
+	subscriber, err := nats.NewSubscriber("nats-subscriber")
+	if err := subscriber.Subscribe(NatsSubject, IngressGroup, &nats.LogHandler{Logger: logger}); err != nil {
+		logger.Error("failed to create nats subscriber", zap.Error(err))
+		os.Exit(1)
+	}
+
 	httpServer := &nethttp.Server{
 		Addr: httpBindAddress,
 	}
@@ -204,6 +233,16 @@ func platformF(cmd *cobra.Command, args []string) {
 		taskHandler := http.NewTaskHandler(logger)
 		taskHandler.TaskService = taskSvc
 
+		publishFn := func(r io.Reader) error {
+			return publisher.Publish(NatsSubject, r)
+		}
+
+		writeHandler := http.NewWriteHandler(publishFn)
+		writeHandler.AuthorizationService = authSvc
+		writeHandler.OrganizationService = orgSvc
+		writeHandler.BucketService = bucketSvc
+		writeHandler.Logger = logger.With(zap.String("handler", "write"))
+
 		// TODO(desa): what to do about idpe.
 		chronografHandler := http.NewChronografHandler(chronografSvc)
 
@@ -219,6 +258,7 @@ func platformF(cmd *cobra.Command, args []string) {
 			SourceHandler:        sourceHandler,
 			TaskHandler:          taskHandler,
 			ViewHandler:          cellHandler,
+			WriteHandler:         writeHandler,
 		}
 		reg.MustRegister(platformHandler.PrometheusCollectors()...)
 
