@@ -5,6 +5,7 @@ import {replace} from 'react-router-redux'
 
 // APIs
 import {
+  getDashboard as getDashboardAJAX,
   getDashboards as getDashboardsAJAX,
   createDashboard as createDashboardAJAX,
   deleteDashboard as deleteDashboardAJAX,
@@ -12,17 +13,25 @@ import {
 
 // Actions
 import {notify} from 'src/shared/actions/notifications'
+import {
+  deleteTimeRange,
+  updateTimeRangeFromQueryParams,
+} from 'src/dashboards/actions/v2/ranges'
 
-// Copy
+// Constants
 import * as copy from 'src/shared/copy/notifications'
 
 export enum ActionTypes {
   LoadDashboards = 'LOAD_DASHBOARDS',
+  LoadDashboard = 'LOAD_DASHBOARD',
   DeleteDashboard = 'DELETE_DASHBOARD',
   DeleteDashboardFailed = 'DELETE_DASHBOARD_FAILED',
 }
 
-export type Action = LoadDashboardsAction | DeleteDashboardAction
+export type Action =
+  | LoadDashboardsAction
+  | DeleteDashboardAction
+  | LoadDashboardAction
 
 interface LoadDashboardsAction {
   type: ActionTypes.LoadDashboards
@@ -34,12 +43,19 @@ interface LoadDashboardsAction {
 interface DeleteDashboardAction {
   type: ActionTypes.DeleteDashboard
   payload: {
-    dashboard: Dashboard
+    dashboardID: string
   }
 }
 
 interface DeleteDashboardFailedAction {
   type: ActionTypes.DeleteDashboardFailed
+  payload: {
+    dashboard: Dashboard
+  }
+}
+
+interface LoadDashboardAction {
+  type: ActionTypes.LoadDashboard
   payload: {
     dashboard: Dashboard
   }
@@ -56,11 +72,16 @@ export const loadDashboards = (
   },
 })
 
+export const loadDashboard = (dashboard: Dashboard): LoadDashboardAction => ({
+  type: ActionTypes.LoadDashboard,
+  payload: {dashboard},
+})
+
 export const deleteDashboard = (
-  dashboard: Dashboard
+  dashboardID: string
 ): DeleteDashboardAction => ({
   type: ActionTypes.DeleteDashboard,
-  payload: {dashboard},
+  payload: {dashboardID},
 })
 
 export const deleteDashboardFailed = (
@@ -106,7 +127,8 @@ export const importDashboardAsync = (
 export const deleteDashboardAsync = (dashboard: Dashboard) => async (
   dispatch: Dispatch<Action>
 ): Promise<void> => {
-  dispatch(deleteDashboard(dashboard))
+  dispatch(deleteDashboard(dashboard.id))
+  dispatch(deleteTimeRange(dashboard.id))
 
   try {
     await deleteDashboardAJAX(dashboard.links.self)
@@ -120,28 +142,19 @@ export const deleteDashboardAsync = (dashboard: Dashboard) => async (
   }
 }
 
-export const getDashboard = (dashboardID: string) => async (
+export const getDashboardAsync = (dashboardID: string) => async (
   dispatch
 ): Promise<void> => {
-  let dashboard: Dashboard
-
   try {
-    const resp = await getDashboardAJAX(dashboardID)
-    dashboard = resp.data
+    const dashboard = await getDashboardAJAX(dashboardID)
+    loadDashboard(dashboard)
   } catch {
     dispatch(replace(`/dashboards`))
-    dispatch(notify(dashboardNotFound(dashboardID)))
+    dispatch(notify(copy.dashboardNotFound(dashboardID)))
 
     return
   }
 
-  const templates = await hydrateTemplates(dashboard.templates, {
-    proxyUrl: source.links.proxy,
-    selections: templateSelectionsFromQueryParams(),
-  })
-
   // TODO: Notify if any of the supplied query params were invalid
-  dispatch(loadDashboard({...dashboard, templates}))
-  dispatch(updateTemplateQueryParams(dashboardId))
-  dispatch(updateTimeRangeFromQueryParams(dashboardId))
+  dispatch(updateTimeRangeFromQueryParams(dashboardID))
 }

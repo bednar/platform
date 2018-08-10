@@ -2,7 +2,6 @@
 import React, {Component, MouseEvent} from 'react'
 import {connect} from 'react-redux'
 import {withRouter} from 'react-router'
-import _ from 'lodash'
 
 // Components
 import {ErrorHandling} from 'src/shared/decorators/errors'
@@ -10,11 +9,9 @@ import CellEditorOverlay from 'src/dashboards/components/CellEditorOverlay'
 import DashboardHeader from 'src/dashboards/components/DashboardHeader'
 import Dashboard from 'src/dashboards/components/Dashboard'
 import ManualRefresh from 'src/shared/components/ManualRefresh'
-import TemplateControlBar from 'src/tempVars/components/TemplateControlBar'
 
 // Actions
 import * as dashboardActions from 'src/dashboards/actions/v2'
-import * as annotationActions from 'src/shared/actions/annotations'
 import * as cellEditorOverlayActions from 'src/dashboards/actions/cellEditorOverlay'
 import * as appActions from 'src/shared/actions/app'
 import * as errorActions from 'src/shared/actions/errors'
@@ -22,7 +19,6 @@ import * as notifyActions from 'src/shared/actions/notifications'
 
 // Utils
 import idNormalizer, {TYPE_ID} from 'src/normalizers/id'
-import {millisecondTimeRange} from 'src/dashboards/utils/time'
 import {getDeep} from 'src/utils/wrappers'
 import {updateDashboardLinks} from 'src/dashboards/utils/dashboardSwitcherLinks'
 import AutoRefresh from 'src/utils/AutoRefresh'
@@ -45,14 +41,12 @@ import {WithRouterProps} from 'react-router'
 import {ManualRefreshProps} from 'src/shared/components/ManualRefresh'
 import {Location} from 'history'
 import {InjectedRouter} from 'react-router'
-import * as AnnotationsActions from 'src/types/actions/annotations'
 import * as AppActions from 'src/types/actions/app'
 import * as ColorsModels from 'src/types/colors'
 import * as DashboardsModels from 'src/types/dashboards'
 import * as ErrorsActions from 'src/types/actions/errors'
 import * as QueriesModels from 'src/types/queries'
 import * as SourcesModels from 'src/types/sources'
-import * as TempVarsModels from 'src/types/tempVars'
 import * as NotificationsActions from 'src/types/actions/notifications'
 
 interface Props extends ManualRefreshProps, WithRouterProps {
@@ -65,10 +59,8 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   location: Location
   dashboardID: string
   dashboard: DashboardsModels.Dashboard
-  dashboards: DashboardsModels.Dashboard[]
   handleChooseAutoRefresh: AppActions.SetAutoRefreshActionCreator
   autoRefresh: number
-  templateControlBarVisibilityToggled: () => AppActions.TemplateControlBarVisibilityToggledActionCreator
   timeRange: QueriesModels.TimeRange
   zoomedTimeRange: QueriesModels.TimeRange
   showTemplateControlBar: boolean
@@ -81,10 +73,8 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   errorThrown: ErrorsActions.ErrorThrownActionCreator
   router: InjectedRouter
   notify: NotificationsActions.PublishNotificationActionCreator
-  getAnnotationsAsync: AnnotationsActions.GetAnnotationsDispatcher
   handleShowCellEditorOverlay: typeof cellEditorOverlayActions.showCellEditorOverlay
   handleHideCellEditorOverlay: typeof cellEditorOverlayActions.hideCellEditorOverlay
-  handleDismissEditingAnnotation: AnnotationsActions.DismissEditingAnnotationActionCreator
   selectedCell: DashboardsModels.Cell
   thresholdsListType: string
   thresholdsListColors: ColorsModels.ColorNumber[]
@@ -101,9 +91,6 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   updateDashboardCell: typeof dashboardActions.updateDashboardCell
   cloneDashboardCellAsync: typeof dashboardActions.cloneDashboardCellAsync
   deleteDashboardCellAsync: typeof dashboardActions.deleteDashboardCellAsync
-  templateVariableLocalSelected: typeof dashboardActions.templateVariableLocalSelected
-  rehydrateTemplatesAsync: typeof dashboardActions.rehydrateTemplatesAsync
-  updateTemplateQueryParams: typeof dashboardActions.updateTemplateQueryParams
   updateQueryParams: typeof dashboardActions.updateQueryParams
 }
 
@@ -131,35 +118,21 @@ class DashboardPage extends Component<Props, State> {
     const {autoRefresh} = this.props
 
     AutoRefresh.poll(autoRefresh)
-    AutoRefresh.subscribe(this.fetchAnnotations)
 
     window.addEventListener('resize', this.handleWindowResize, true)
 
     await this.getDashboard()
 
-    this.fetchAnnotations()
     this.getDashboardLinks()
   }
 
-  public fetchAnnotations = () => {
-    const {source, timeRange, getAnnotationsAsync} = this.props
-    const rangeMs = millisecondTimeRange(timeRange)
-    getAnnotationsAsync(source.links.annotations, rangeMs)
-  }
-
   public componentDidUpdate(prevProps: Props) {
-    const {dashboard, autoRefresh} = this.props
+    const {autoRefresh} = this.props
 
     const prevPath = getDeep(prevProps.location, 'pathname', null)
     const thisPath = getDeep(this.props.location, 'pathname', null)
 
-    const templates = this.parseTempVar(dashboard)
-    const prevTemplates = this.parseTempVar(prevProps.dashboard)
-
-    const intersection = _.intersection(templates, prevTemplates)
-    const isTemplateDeleted = intersection.length !== prevTemplates.length
-
-    if ((prevPath && thisPath && prevPath !== thisPath) || isTemplateDeleted) {
+    if (prevPath && thisPath && prevPath !== thisPath) {
       this.getDashboard()
     }
 
@@ -170,10 +143,8 @@ class DashboardPage extends Component<Props, State> {
 
   public componentWillUnmount() {
     AutoRefresh.stopPolling()
-    AutoRefresh.unsubscribe(this.fetchAnnotations)
 
     window.removeEventListener('resize', this.handleWindowResize, true)
-    this.props.handleDismissEditingAnnotation()
   }
 
   public render() {
@@ -287,15 +258,6 @@ class DashboardPage extends Component<Props, State> {
           onToggleTempVarControls={this.handleToggleTempVarControls}
           handleClickPresentationButton={handleClickPresentationButton}
         />
-        {inPresentationMode || (
-          <TemplateControlBar
-            templates={dashboard && dashboard.templates}
-            onSaveTemplates={this.handleSaveTemplateVariables}
-            onPickTemplate={this.handlePickTemplate}
-            isOpen={showTemplateControlBar}
-            source={source}
-          />
-        )}
         {dashboard ? (
           <Dashboard
             source={source}
@@ -319,20 +281,14 @@ class DashboardPage extends Component<Props, State> {
     )
   }
 
-  public parseTempVar(
-    dashboard: DashboardsModels.Dashboard
-  ): TempVarsModels.Template[] {
-    return getDeep(dashboard, 'templates', []).map(t => t.tempVar)
-  }
-
   private handleWindowResize = (): void => {
     this.setState({windowHeight: window.innerHeight})
   }
 
   private getDashboard = async () => {
-    const {dashboardID, source, getDashboardWithTemplatesAsync} = this.props
+    const {dashboardID, getDashboard} = this.props
 
-    await getDashboardWithTemplatesAsync(dashboardID, source)
+    await getDashboard(dashboardID)
     this.updateActiveDashboard()
   }
 
@@ -369,13 +325,7 @@ class DashboardPage extends Component<Props, State> {
   private handleChooseTimeRange = (
     timeRange: QueriesModels.TimeRange
   ): void => {
-    const {
-      dashboard,
-      getAnnotationsAsync,
-      source,
-      setDashTimeV1,
-      updateQueryParams,
-    } = this.props
+    const {dashboard, setDashTimeV1, updateQueryParams} = this.props
 
     setDashTimeV1(dashboard.id, {
       ...timeRange,
@@ -386,9 +336,6 @@ class DashboardPage extends Component<Props, State> {
       lower: timeRange.lower,
       upper: timeRange.upper,
     })
-
-    const annotationRange = millisecondTimeRange(timeRange)
-    getAnnotationsAsync(source.links.annotations, annotationRange)
   }
 
   private handleUpdatePosition = (cells: DashboardsModels.Cell[]): void => {
@@ -421,42 +368,6 @@ class DashboardPage extends Component<Props, State> {
   private handleDeleteDashboardCell = (cell: DashboardsModels.Cell): void => {
     const {dashboard} = this.props
     this.props.deleteDashboardCellAsync(dashboard, cell)
-  }
-
-  private handlePickTemplate = (
-    template: TempVarsModels.Template,
-    value: TempVarsModels.TemplateValue
-  ): void => {
-    const {
-      dashboard,
-      source,
-      templateVariableLocalSelected,
-      rehydrateTemplatesAsync,
-    } = this.props
-
-    templateVariableLocalSelected(dashboard.id, template.id, value)
-    rehydrateTemplatesAsync(dashboard.id, source)
-  }
-
-  private handleSaveTemplateVariables = async (
-    templates: TempVarsModels.Template[]
-  ): Promise<void> => {
-    const {dashboard, updateTemplateQueryParams} = this.props
-
-    try {
-      await this.props.putDashboard({
-        ...dashboard,
-        templates,
-      })
-
-      updateTemplateQueryParams(dashboard.id)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  private handleToggleTempVarControls = (): void => {
-    this.props.templateControlBarVisibilityToggled()
   }
 
   private handleZoomedTimeRange = (
@@ -501,7 +412,7 @@ const mstp = (state, {params: {dashboardID}}) => {
     },
     dashboardUI: {dashboards, cellQueryStatus, zoomedTimeRange},
     sources,
-    dashTimeV1,
+    ranges,
     cellEditorOverlay: {
       cell,
       thresholdsListType,
@@ -512,9 +423,8 @@ const mstp = (state, {params: {dashboardID}}) => {
   } = state
 
   const timeRange =
-    dashTimeV1.ranges.find(
-      r => r.dashboardID === idNormalizer(TYPE_ID, dashboardID)
-    ) || defaultTimeRange
+    ranges.find(r => r.dashboardID === idNormalizer(TYPE_ID, dashboardID)) ||
+    defaultTimeRange
 
   const dashboard = dashboards.find(
     d => d.id === idNormalizer(TYPE_ID, dashboardID)
@@ -540,7 +450,8 @@ const mstp = (state, {params: {dashboardID}}) => {
   }
 }
 
-const mdtp = {
+const mdtp: Partial<Props> = {
+  getDashboard: dashboardActions.getDashboardAsync,
   setDashTimeV1: dashboardActions.setDashTimeV1,
   setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
   updateDashboard: dashboardActions.updateDashboard,
@@ -551,22 +462,13 @@ const mdtp = {
   updateDashboardCell: dashboardActions.updateDashboardCell,
   cloneDashboardCellAsync: dashboardActions.cloneDashboardCellAsync,
   deleteDashboardCellAsync: dashboardActions.deleteDashboardCellAsync,
-  templateVariableLocalSelected: dashboardActions.templateVariableLocalSelected,
-  getDashboardWithTemplatesAsync:
-    dashboardActions.getDashboardWithTemplatesAsync,
-  rehydrateTemplatesAsync: dashboardActions.rehydrateTemplatesAsync,
-  updateTemplateQueryParams: dashboardActions.updateTemplateQueryParams,
   updateQueryParams: dashboardActions.updateQueryParams,
   handleChooseAutoRefresh: appActions.setAutoRefresh,
-  templateControlBarVisibilityToggled:
-    appActions.templateControlBarVisibilityToggled,
   handleClickPresentationButton: appActions.delayEnablePresentationMode,
   errorThrown: errorActions.errorThrown,
   notify: notifyActions.notify,
   handleShowCellEditorOverlay: cellEditorOverlayActions.showCellEditorOverlay,
   handleHideCellEditorOverlay: cellEditorOverlayActions.hideCellEditorOverlay,
-  getAnnotationsAsync: annotationActions.getAnnotationsAsync,
-  handleDismissEditingAnnotation: annotationActions.dismissEditingAnnotation,
 }
 
 export default connect(mstp, mdtp)(

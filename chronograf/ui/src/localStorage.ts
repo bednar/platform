@@ -7,7 +7,7 @@ import {
 
 import {LocalStorage} from 'src/types/localStorage'
 
-declare var VERSION: string
+declare const VERSION: string
 
 export const loadLocalStorage = (errorsQueue: any[]): LocalStorage | {} => {
   try {
@@ -20,23 +20,6 @@ export const loadLocalStorage = (errorsQueue: any[]): LocalStorage | {} => {
 
       console.log(newVersion(version).message) // tslint:disable-line no-console
       errorsQueue.push(newVersion(version))
-
-      if (!state.dashTimeV1) {
-        window.localStorage.removeItem('state')
-        return {}
-      }
-
-      const ranges = normalizer(_.get(state, ['dashTimeV1', 'ranges'], []))
-      const dashTimeV1 = {ranges}
-
-      window.localStorage.setItem(
-        'state',
-        JSON.stringify({
-          dashTimeV1,
-        })
-      )
-
-      return {dashTimeV1}
     }
 
     delete state.VERSION
@@ -55,14 +38,12 @@ export const saveToLocalStorage = ({
   dataExplorerQueryConfigs,
   timeRange,
   dataExplorer,
-  dashTimeV1: {ranges},
+  ranges,
   logs,
   script,
 }: LocalStorage): void => {
   try {
     const appPersisted = {app: {persisted}}
-    const dashTimeV1 = {ranges: normalizer(ranges)}
-
     const minimalLogs = _.omit(logs, [
       'tableData',
       'histogramData',
@@ -75,7 +56,7 @@ export const saveToLocalStorage = ({
         ...appPersisted,
         VERSION,
         timeRange,
-        dashTimeV1,
+        ranges: normalizer(ranges),
         dataExplorer,
         dataExplorerQueryConfigs,
         script,

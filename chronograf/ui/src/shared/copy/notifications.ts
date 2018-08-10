@@ -421,7 +421,7 @@ export const tempVarAlreadyExists = (tempVarName: string): Notification => ({
   message: `Variable '${tempVarName}' already exists. Please enter a new value.`,
 })
 
-export const dashboardNotFound = (dashboardID: number): Notification => ({
+export const dashboardNotFound = (dashboardID: string): Notification => ({
   ...defaultErrorNotification,
   icon: 'dash-h',
   message: `Dashboard ${dashboardID} could not be found`,

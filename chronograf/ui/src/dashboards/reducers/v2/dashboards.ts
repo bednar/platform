@@ -1,5 +1,6 @@
 import {Action, ActionTypes} from 'src/dashboards/actions/v2'
 import {Dashboard} from 'src/types/v2'
+import _ from 'lodash'
 
 type State = Dashboard[]
 
@@ -12,9 +13,17 @@ export default (state: State = [], action: Action): State => {
     }
 
     case ActionTypes.DeleteDashboard: {
+      const {dashboardID} = action.payload
+
+      return [...state.filter(d => d.id !== dashboardID)]
+    }
+
+    case ActionTypes.LoadDashboard: {
       const {dashboard} = action.payload
 
-      return [...state.filter(d => d.id !== dashboard.id)]
+      const newDashboards = _.unionBy([dashboard], state, 'id')
+
+      return newDashboards
     }
   }
   return state

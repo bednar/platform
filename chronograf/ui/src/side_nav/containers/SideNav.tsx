@@ -32,7 +32,6 @@ class SideNav extends PureComponent<Props> {
     const {pathname, query} = location
     const defaultSource = sources.find(s => s.default)
     const id = query.sourceID || _.get(defaultSource, 'id', 0)
-    console.log(sources)
 
     const sourceParam = `?sourceID=${id}`
     const isDefaultPage = pathname.split('/').includes(DEFAULT_HOME_PAGE)
