@@ -19,7 +19,6 @@ const Dashboard = ({
   onPositionChange,
   inPresentationMode,
   templatesIncludingDashTime,
-  onSummonOverlayTechnologies,
   setScrollTop,
   inView,
 }) => {
@@ -58,7 +57,6 @@ const Dashboard = ({
             onCloneCell={onCloneCell}
             onPositionChange={onPositionChange}
             templates={templatesIncludingDashTime}
-            onSummonOverlayTechnologies={onSummonOverlayTechnologies}
           />
         ) : (
           <DashboardEmpty dashboard={dashboard} />
@@ -71,26 +69,7 @@ const Dashboard = ({
 const {arrayOf, bool, func, shape, string, number} = PropTypes
 
 Dashboard.propTypes = {
-  dashboard: shape({
-    templates: arrayOf(
-      shape({
-        type: string.isRequired,
-        tempVar: string.isRequired,
-        query: shape({
-          db: string,
-          rp: string,
-          influxql: string,
-        }),
-        values: arrayOf(
-          shape({
-            type: string.isRequired,
-            value: string.isRequired,
-            selected: bool,
-          })
-        ).isRequired,
-      })
-    ).isRequired,
-  }),
+  dashboard: shape({}).isRequired,
   templatesIncludingDashTime: arrayOf(shape()).isRequired,
   inPresentationMode: bool,
   onPositionChange: func,

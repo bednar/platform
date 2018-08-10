@@ -147,7 +147,7 @@ export const getDashboardAsync = (dashboardID: string) => async (
 ): Promise<void> => {
   try {
     const dashboard = await getDashboardAJAX(dashboardID)
-    loadDashboard(dashboard)
+    dispatch(loadDashboard(dashboard))
   } catch {
     dispatch(replace(`/dashboards`))
     dispatch(notify(copy.dashboardNotFound(dashboardID)))

@@ -69,7 +69,6 @@ class LayoutRenderer extends Component<Props, State> {
       manualRefresh,
       onDeleteCell,
       onCloneCell,
-      onSummonOverlayTechnologies,
     } = this.props
 
     const {rowHeight} = this.state
@@ -104,7 +103,6 @@ class LayoutRenderer extends Component<Props, State> {
               onDeleteCell={onDeleteCell}
               onCloneCell={onCloneCell}
               manualRefresh={manualRefresh}
-              onSummonOverlayTechnologies={onSummonOverlayTechnologies}
             />
           </div>
         ))}

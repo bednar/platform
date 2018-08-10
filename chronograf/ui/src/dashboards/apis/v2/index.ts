@@ -1,5 +1,15 @@
+// Libraries
 import AJAX from 'src/utils/ajax'
+
+// Types
 import {Dashboard} from 'src/types/v2'
+import {DashboardSwitcherLinks} from 'src/types/dashboards'
+
+// Utils
+import {
+  linksFromDashboards,
+  updateDashboardLinks,
+} from 'src/dashboards/utils/dashboardSwitcherLinks'
 
 // TODO(desa): what to do about getting dashboards from another v2 source
 export const getDashboards = async (url: string): Promise<Dashboard[]> => {
@@ -54,4 +64,16 @@ export const deleteDashboard = async (url: string): Promise<void> => {
     console.error(error)
     throw error
   }
+}
+
+export const loadDashboardLinks = async (
+  dashboardsLink: string,
+  activeDashboard: Dashboard
+): Promise<DashboardSwitcherLinks> => {
+  const dashboards = await getDashboards(dashboardsLink)
+
+  const links = linksFromDashboards(dashboards)
+  const dashboardLinks = updateDashboardLinks(links, activeDashboard)
+
+  return dashboardLinks
 }

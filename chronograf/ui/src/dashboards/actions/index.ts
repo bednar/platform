@@ -5,47 +5,29 @@ import {Dispatch} from 'redux'
 
 import {
   getDashboards as getDashboardsAJAX,
-  getDashboard as getDashboardAJAX,
   updateDashboard as updateDashboardAJAX,
-  deleteDashboard as deleteDashboardAJAX,
   updateDashboardCell as updateDashboardCellAJAX,
   addDashboardCell as addDashboardCellAJAX,
   deleteDashboardCell as deleteDashboardCellAJAX,
   createDashboard as createDashboardAJAX,
 } from 'src/dashboards/apis'
 
-import {hydrateTemplates} from 'src/tempVars/utils/graph'
-
 import {notify} from 'src/shared/actions/notifications'
 import {errorThrown} from 'src/shared/actions/errors'
 import {stripPrefix} from 'src/utils/basepath'
 
 import {
-  templateSelectionsFromQueryParams,
-  templateSelectionsFromTemplates,
-} from 'src/dashboards/utils/tempVars'
-import {validTimeRange, validAbsoluteTimeRange} from 'src/dashboards/utils/time'
-import {
   getNewDashboardCell,
   getClonedDashboardCell,
 } from 'src/dashboards/utils/cellGetters'
 import {
-  dashboardDeleted,
-  dashboardDeleteFailed,
   cellAdded,
   cellDeleted,
   dashboardImportFailed,
   dashboardImported,
-  dashboardNotFound,
-  invalidZoomedTimeRangeValueInURLQuery,
-  invalidTimeRangeValueInURLQuery,
 } from 'src/shared/copy/notifications'
 
 import {getDeep} from 'src/utils/wrappers'
-
-import idNormalizer, {TYPE_ID} from 'src/normalizers/id'
-
-import {defaultTimeRange} from 'src/shared/data/timeRanges'
 
 // Types
 import {
@@ -53,7 +35,6 @@ import {
   Cell,
   CellType,
   TimeRange,
-  Source,
   Template,
   TemplateValue,
   TemplateType,
@@ -490,24 +471,6 @@ export const updateDashboardCell = (dashboard: Dashboard, cell: Cell) => async (
   }
 }
 
-export const deleteDashboardAsync = (dashboard: Dashboard) => async (
-  dispatch: Dispatch<Action>
-): Promise<void> => {
-  dispatch(deleteDashboard(dashboard))
-  try {
-    await deleteDashboardAJAX(dashboard)
-    dispatch(notify(dashboardDeleted(dashboard.name)))
-  } catch (error) {
-    dispatch(
-      errorThrown(
-        error,
-        dashboardDeleteFailed(dashboard.name, error.data.message)
-      )
-    )
-    dispatch(deleteDashboardFailed(dashboard))
-  }
-}
-
 export const addDashboardCellAsync = (
   dashboard: Dashboard,
   cellType?: CellType
@@ -595,115 +558,4 @@ export const importDashboardAsync = (dashboard: Dashboard) => async (
     console.error(error)
     dispatch(errorThrown(error))
   }
-}
-
-const updateTimeRangeFromQueryParams = (dashboardID: number) => (
-  dispatch: Dispatch<Action>,
-  getState
-): void => {
-  const {dashTimeV1} = getState()
-  const queryParams = qs.parse(window.location.search, {
-    ignoreQueryPrefix: true,
-  })
-
-  const timeRangeFromQueries = {
-    lower: queryParams.lower,
-    upper: queryParams.upper,
-  }
-
-  const zoomedTimeRangeFromQueries = {
-    lower: queryParams.zoomedLower,
-    upper: queryParams.zoomedUpper,
-  }
-
-  let validatedTimeRange = validTimeRange(timeRangeFromQueries)
-
-  if (!validatedTimeRange.lower) {
-    const dashboardTimeRange = dashTimeV1.ranges.find(
-      r => r.dashboardID === idNormalizer(TYPE_ID, dashboardID)
-    )
-
-    validatedTimeRange = dashboardTimeRange || defaultTimeRange
-
-    if (timeRangeFromQueries.lower || timeRangeFromQueries.upper) {
-      dispatch(notify(invalidTimeRangeValueInURLQuery()))
-    }
-  }
-
-  dispatch(setDashTimeV1(dashboardID, validatedTimeRange))
-
-  const validatedZoomedTimeRange = validAbsoluteTimeRange(
-    zoomedTimeRangeFromQueries
-  )
-
-  if (
-    !validatedZoomedTimeRange.lower &&
-    (queryParams.zoomedLower || queryParams.zoomedUpper)
-  ) {
-    dispatch(notify(invalidZoomedTimeRangeValueInURLQuery()))
-  }
-
-  dispatch(setZoomedTimeRange(validatedZoomedTimeRange))
-
-  const updatedQueryParams = {
-    lower: validatedTimeRange.lower,
-    upper: validatedTimeRange.upper,
-    zoomedLower: validatedZoomedTimeRange.lower,
-    zoomedUpper: validatedZoomedTimeRange.upper,
-  }
-
-  dispatch(updateQueryParams(updatedQueryParams))
-}
-
-export const getDashboardWithTemplatesAsync = (
-  dashboardId: number,
-  source: Source
-) => async (dispatch): Promise<void> => {
-  let dashboard: Dashboard
-
-  try {
-    const resp = await getDashboardAJAX(dashboardId)
-    dashboard = resp.data
-  } catch {
-    dispatch(replace(`/sources/${source.id}/dashboards`))
-    dispatch(notify(dashboardNotFound(dashboardId)))
-
-    return
-  }
-
-  const templates = await hydrateTemplates(dashboard.templates, {
-    proxyUrl: source.links.proxy,
-    selections: templateSelectionsFromQueryParams(),
-  })
-
-  // TODO: Notify if any of the supplied query params were invalid
-  dispatch(loadDashboard({...dashboard, templates}))
-  dispatch(updateTemplateQueryParams(dashboardId))
-  dispatch(updateTimeRangeFromQueryParams(dashboardId))
-}
-
-export const rehydrateTemplatesAsync = (
-  dashboardId: number,
-  source: Source
-) => async (dispatch, getState): Promise<void> => {
-  const dashboard = getDashboard(getState(), dashboardId)
-
-  const templates = await hydrateTemplates(dashboard.templates, {
-    proxyUrl: source.links.proxy,
-  })
-
-  dispatch(updateTemplates(templates))
-  dispatch(updateTemplateQueryParams(dashboardId))
-}
-
-export const updateTemplateQueryParams = (dashboardId: number) => (
-  dispatch: Dispatch<Action>,
-  getState
-): void => {
-  const templates = getDashboard(getState(), dashboardId).templates
-  const updatedQueryParams = {
-    tempVars: templateSelectionsFromTemplates(templates),
-  }
-
-  dispatch(updateQueryParams(updatedQueryParams))
 }

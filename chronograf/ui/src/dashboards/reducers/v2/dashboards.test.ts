@@ -9,7 +9,7 @@ import {
 } from 'src/dashboards/actions/v2/'
 
 // Resources
-import {dashboard} from 'src/dashboards/reducers/v2/resources'
+import {dashboard} from 'src/dashboards/resources'
 
 describe('dashboards reducer', () => {
   it('can load the dashboards', () => {

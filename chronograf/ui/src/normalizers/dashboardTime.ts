@@ -1,6 +1,11 @@
 import _ from 'lodash'
+import {TimeRange} from 'src/types'
 
-const dashtime = ranges => {
+interface Range extends TimeRange {
+  dashboardID: string
+}
+
+const dashtime = (ranges: Range[]): Range[] => {
   if (!Array.isArray(ranges)) {
     return []
   }
@@ -21,7 +26,7 @@ const dashtime = ranges => {
 
     const {dashboardID, lower, upper} = r
 
-    if (!dashboardID || typeof dashboardID !== 'number') {
+    if (!dashboardID || typeof dashboardID !== 'string') {
       return false
     }
 

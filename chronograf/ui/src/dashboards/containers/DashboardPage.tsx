@@ -5,26 +5,23 @@ import {withRouter} from 'react-router'
 
 // Components
 import {ErrorHandling} from 'src/shared/decorators/errors'
-import CellEditorOverlay from 'src/dashboards/components/CellEditorOverlay'
 import DashboardHeader from 'src/dashboards/components/DashboardHeader'
-import Dashboard from 'src/dashboards/components/Dashboard'
+import DashboardComponent from 'src/dashboards/components/Dashboard'
 import ManualRefresh from 'src/shared/components/ManualRefresh'
 
 // Actions
 import * as dashboardActions from 'src/dashboards/actions/v2'
-import * as cellEditorOverlayActions from 'src/dashboards/actions/cellEditorOverlay'
 import * as appActions from 'src/shared/actions/app'
 import * as errorActions from 'src/shared/actions/errors'
 import * as notifyActions from 'src/shared/actions/notifications'
 
 // Utils
-import idNormalizer, {TYPE_ID} from 'src/normalizers/id'
 import {getDeep} from 'src/utils/wrappers'
 import {updateDashboardLinks} from 'src/dashboards/utils/dashboardSwitcherLinks'
 import AutoRefresh from 'src/utils/AutoRefresh'
 
 // APIs
-import {loadDashboardLinks} from 'src/dashboards/apis'
+import {loadDashboardLinks} from 'src/dashboards/apis/v2'
 
 // Constants
 import {
@@ -43,22 +40,23 @@ import {Location} from 'history'
 import {InjectedRouter} from 'react-router'
 import * as AppActions from 'src/types/actions/app'
 import * as ColorsModels from 'src/types/colors'
-import * as DashboardsModels from 'src/types/dashboards'
 import * as ErrorsActions from 'src/types/actions/errors'
 import * as QueriesModels from 'src/types/queries'
-import * as SourcesModels from 'src/types/sources'
 import * as NotificationsActions from 'src/types/actions/notifications'
+import * as DashboardsModels from 'src/types/dashboards'
+
+import {Links, Source} from 'src/types/v2'
+import {Dashboard} from 'src/types/v2/dashboards'
 
 interface Props extends ManualRefreshProps, WithRouterProps {
-  source: SourcesModels.Source
-  sources: SourcesModels.Source[]
+  links: Links
+  source: Source
+  sources: Source[]
   params: {
-    sourceID: string
     dashboardID: string
   }
   location: Location
-  dashboardID: string
-  dashboard: DashboardsModels.Dashboard
+  dashboard: Dashboard
   handleChooseAutoRefresh: AppActions.SetAutoRefreshActionCreator
   autoRefresh: number
   timeRange: QueriesModels.TimeRange
@@ -73,14 +71,12 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   errorThrown: ErrorsActions.ErrorThrownActionCreator
   router: InjectedRouter
   notify: NotificationsActions.PublishNotificationActionCreator
-  handleShowCellEditorOverlay: typeof cellEditorOverlayActions.showCellEditorOverlay
-  handleHideCellEditorOverlay: typeof cellEditorOverlayActions.hideCellEditorOverlay
   selectedCell: DashboardsModels.Cell
   thresholdsListType: string
   thresholdsListColors: ColorsModels.ColorNumber[]
   gaugeColors: ColorsModels.ColorNumber[]
   lineColors: ColorsModels.ColorString[]
-  getDashboard: typeof dashboardActions.getDashboard
+  getDashboard: typeof dashboardActions.getDashboardAsync
   setDashTimeV1: typeof dashboardActions.setDashTimeV1
   setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
   updateDashboard: typeof dashboardActions.updateDashboard
@@ -157,20 +153,11 @@ class DashboardPage extends Component<Props, State> {
       zoomedTimeRange: {lower: zoomedLower, upper: zoomedUpper},
       showTemplateControlBar,
       dashboard,
-      dashboardID,
-      lineColors,
-      gaugeColors,
       autoRefresh,
-      selectedCell,
       manualRefresh,
       onManualRefresh,
-      cellQueryStatus,
-      thresholdsListType,
-      thresholdsListColors,
       inPresentationMode,
       handleChooseAutoRefresh,
-      handleShowCellEditorOverlay,
-      handleHideCellEditorOverlay,
       handleClickPresentationButton,
     } = this.props
     const low = zoomedLower || lower
@@ -208,12 +195,7 @@ class DashboardPage extends Component<Props, State> {
 
     let templatesIncludingDashTime
     if (dashboard) {
-      templatesIncludingDashTime = [
-        ...dashboard.templates,
-        dashboardTime,
-        upperDashboardTime,
-        interval,
-      ]
+      templatesIncludingDashTime = [dashboardTime, upperDashboardTime, interval]
     } else {
       templatesIncludingDashTime = []
     }
@@ -222,25 +204,6 @@ class DashboardPage extends Component<Props, State> {
 
     return (
       <div className="page dashboard-page">
-        {selectedCell ? (
-          <CellEditorOverlay
-            source={source}
-            sources={sources}
-            cell={selectedCell}
-            timeRange={timeRange}
-            autoRefresh={autoRefresh}
-            dashboardID={dashboardID}
-            queryStatus={cellQueryStatus}
-            onSave={this.handleSaveEditedCell}
-            onCancel={handleHideCellEditorOverlay}
-            templates={templatesIncludingDashTime}
-            editQueryStatus={this.props.editCellQueryStatus}
-            thresholdsListType={thresholdsListType}
-            thresholdsListColors={thresholdsListColors}
-            gaugeColors={gaugeColors}
-            lineColors={lineColors}
-          />
-        ) : null}
         <DashboardHeader
           dashboard={dashboard}
           timeRange={timeRange}
@@ -255,11 +218,10 @@ class DashboardPage extends Component<Props, State> {
           showTemplateControlBar={showTemplateControlBar}
           handleChooseAutoRefresh={handleChooseAutoRefresh}
           handleChooseTimeRange={this.handleChooseTimeRange}
-          onToggleTempVarControls={this.handleToggleTempVarControls}
           handleClickPresentationButton={handleClickPresentationButton}
         />
         {dashboard ? (
-          <Dashboard
+          <DashboardComponent
             source={source}
             sources={sources}
             setScrollTop={this.setScrollTop}
@@ -274,7 +236,6 @@ class DashboardPage extends Component<Props, State> {
             onDeleteCell={this.handleDeleteDashboardCell}
             onCloneCell={this.handleCloneCell}
             templatesIncludingDashTime={templatesIncludingDashTime}
-            onSummonOverlayTechnologies={handleShowCellEditorOverlay}
           />
         ) : null}
       </div>
@@ -286,9 +247,9 @@ class DashboardPage extends Component<Props, State> {
   }
 
   private getDashboard = async () => {
-    const {dashboardID, getDashboard} = this.props
+    const {params, getDashboard} = this.props
 
-    await getDashboard(dashboardID)
+    await getDashboard(params.dashboardID)
     this.updateActiveDashboard()
   }
 
@@ -390,10 +351,13 @@ class DashboardPage extends Component<Props, State> {
   }
 
   private getDashboardLinks = async (): Promise<void> => {
-    const {source, dashboard: activeDashboard} = this.props
+    const {links, dashboard: activeDashboard} = this.props
 
     try {
-      const dashboardLinks = await loadDashboardLinks(source, {activeDashboard})
+      const dashboardLinks = await loadDashboardLinks(
+        links.dashboard,
+        activeDashboard
+      )
 
       this.setState({
         dashboardLinks,
@@ -406,11 +370,12 @@ class DashboardPage extends Component<Props, State> {
 
 const mstp = (state, {params: {dashboardID}}) => {
   const {
+    links,
     app: {
       ephemeral: {inPresentationMode},
       persisted: {autoRefresh, showTemplateControlBar},
     },
-    dashboardUI: {dashboards, cellQueryStatus, zoomedTimeRange},
+    dashboardUI: {cellQueryStatus, zoomedTimeRange},
     sources,
     ranges,
     cellEditorOverlay: {
@@ -420,23 +385,21 @@ const mstp = (state, {params: {dashboardID}}) => {
       gaugeColors,
       lineColors,
     },
+    dashboards,
   } = state
 
   const timeRange =
-    ranges.find(r => r.dashboardID === idNormalizer(TYPE_ID, dashboardID)) ||
-    defaultTimeRange
-
-  const dashboard = dashboards.find(
-    d => d.id === idNormalizer(TYPE_ID, dashboardID)
-  )
+    ranges.find(r => r.dashboardID === dashboardID) || defaultTimeRange
 
   const selectedCell = cell
 
+  const dashboard = dashboards.find(d => d.id === dashboardID)
+
   return {
+    links,
     sources,
-    dashboard,
-    dashboardID,
     timeRange,
+    dashboard,
     zoomedTimeRange,
     autoRefresh,
     cellQueryStatus,
@@ -467,8 +430,6 @@ const mdtp: Partial<Props> = {
   handleClickPresentationButton: appActions.delayEnablePresentationMode,
   errorThrown: errorActions.errorThrown,
   notify: notifyActions.notify,
-  handleShowCellEditorOverlay: cellEditorOverlayActions.showCellEditorOverlay,
-  handleHideCellEditorOverlay: cellEditorOverlayActions.hideCellEditorOverlay,
 }
 
 export default connect(mstp, mdtp)(

@@ -23,7 +23,7 @@ export default (state: State = initialState, action: Action) => {
     case ActionTypes.RetainRangesDashboardTimeV1: {
       const {dashboardIDs} = action.payload
       const ranges = state.filter(r => dashboardIDs.includes(r.dashboardID))
-      return {...state, ranges}
+      return ranges
     }
 
     case ActionTypes.SetDashboardTimeV1: {

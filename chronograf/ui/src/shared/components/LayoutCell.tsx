@@ -19,7 +19,6 @@ interface Props {
   children: ReactElement<any>
   onDeleteCell: (cell: Cell) => void
   onCloneCell: (cell: Cell) => void
-  onSummonOverlayTechnologies: (cell: Cell) => void
   isEditable: boolean
   cellData: TimeSeriesServerResponse[]
   templates: Template[]
@@ -117,8 +116,7 @@ export default class LayoutCell extends Component<Props> {
   }
 
   private handleSummonOverlay = (): void => {
-    const {cell, onSummonOverlayTechnologies} = this.props
-    onSummonOverlayTechnologies(cell)
+    // TODO: add back in once CEO is refactored
   }
 
   private handleCSVDownload = (): void => {

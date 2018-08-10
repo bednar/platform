@@ -31,7 +31,6 @@ interface Props {
   onZoom: () => void
   onDeleteCell: () => void
   onCloneCell: () => void
-  onSummonOverlayTechnologies: () => void
 }
 
 @ErrorHandling
@@ -54,7 +53,6 @@ class Layout extends Component<Props> {
       isEditable,
       onCloneCell,
       onDeleteCell,
-      onSummonOverlayTechnologies,
     } = this.props
     const {cellData} = this.state
 
@@ -66,7 +64,6 @@ class Layout extends Component<Props> {
         isEditable={isEditable}
         onCloneCell={onCloneCell}
         onDeleteCell={onDeleteCell}
-        onSummonOverlayTechnologies={onSummonOverlayTechnologies}
       >
         {cell.isWidget ? (
           <WidgetCell cell={cell} timeRange={timeRange} source={source} />

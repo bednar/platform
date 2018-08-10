@@ -2,29 +2,28 @@ import {
   linksFromDashboards,
   updateDashboardLinks,
 } from 'src/dashboards/utils/dashboardSwitcherLinks'
-import {dashboard, source} from 'test/resources'
+
+import {dashboard} from 'src/dashboards/resources'
 
 describe('dashboards.utils.dashboardSwitcherLinks', () => {
   describe('linksFromDashboards', () => {
-    const socure = {...source, id: '897'}
-
     const dashboards = [
       {
         ...dashboard,
-        id: 123,
+        id: '123',
         name: 'Test Dashboard',
       },
     ]
 
     it('can build dashboard links for source', () => {
-      const actualLinks = linksFromDashboards(dashboards, socure)
+      const actualLinks = linksFromDashboards(dashboards)
 
       const expectedLinks = {
         links: [
           {
             key: '123',
             text: 'Test Dashboard',
-            to: '/sources/897/dashboards/123',
+            to: '/dashboards/123',
           },
         ],
         active: null,
@@ -38,28 +37,29 @@ describe('dashboards.utils.dashboardSwitcherLinks', () => {
     const link1 = {
       key: '9001',
       text: 'Low Dash',
-      to: '/sources/897/dashboards/9001',
+      to: '/dashboards/9001',
     }
 
     const link2 = {
       key: '2282',
       text: 'Other Dash',
-      to: '/sources/897/dashboards/2282',
+      to: '/dashboards/2282',
     }
 
     const activeDashboard = {
       ...dashboard,
-      id: 123,
+      id: '123',
       name: 'Test Dashboard',
     }
 
     const activeLink = {
       key: '123',
       text: 'Test Dashboard',
-      to: '/sources/897/dashboards/123',
+      to: '/dashboards/123',
     }
 
     const links = [link1, activeLink, link2]
+
     it('can set the active link', () => {
       const loadedLinks = {links, active: null}
       const actualLinks = updateDashboardLinks(loadedLinks, activeDashboard)
@@ -78,14 +78,14 @@ describe('dashboards.utils.dashboardSwitcherLinks', () => {
 
     const staleDashboard = {
       ...dashboard,
-      id: 3000,
+      id: '123',
       name: 'Stale Dashboard Name',
     }
 
     const staleLink = {
       key: '3000',
       text: 'Stale Dashboard Name',
-      to: '/sources/897/dashboards/3000',
+      to: '/dashboards/3000',
     }
 
     const staleLinks = [link1, staleLink, link2]
@@ -105,7 +105,7 @@ describe('dashboards.utils.dashboardSwitcherLinks', () => {
       const renamedLink = {
         key: '3000',
         text: 'New Dashboard Name',
-        to: '/sources/897/dashboards/3000',
+        to: '/dashboards/3000',
       }
 
       const expectedDashlinks = {
