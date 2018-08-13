@@ -9,13 +9,11 @@ import {Dashboard, Cell} from 'src/types/v2'
 
 interface Props {
   dashboard: Dashboard
-  onCloneCell: any
-  onZoom: () => void
   setScrollTop: () => void
-  inView: () => void
   inPresentationMode: boolean
-  onPositionChange: (cell: Cell) => void
+  onPositionChange: (cells: Cell[]) => void
   onDeleteCell: (cell: Cell) => void
+  onCloneCell: (cell: Cell) => void
 }
 
 class DashboardComponent extends PureComponent<Props> {
@@ -39,7 +37,6 @@ class DashboardComponent extends PureComponent<Props> {
         <div className="dashboard container-fluid full-width">
           {dashboard.cells.length ? (
             <Grid
-              isEditable={true}
               cells={dashboard.cells}
               onCloneCell={onCloneCell}
               onDeleteCell={onDeleteCell}

@@ -7,7 +7,6 @@ import {
   getDashboards as getDashboardsAJAX,
   updateDashboard as updateDashboardAJAX,
   updateDashboardCell as updateDashboardCellAJAX,
-  addDashboardCell as addDashboardCellAJAX,
   deleteDashboardCell as deleteDashboardCellAJAX,
   createDashboard as createDashboardAJAX,
 } from 'src/dashboards/apis'
@@ -17,11 +16,6 @@ import {errorThrown} from 'src/shared/actions/errors'
 import {stripPrefix} from 'src/utils/basepath'
 
 import {
-  getNewDashboardCell,
-  getClonedDashboardCell,
-} from 'src/dashboards/utils/cellGetters'
-import {
-  cellAdded,
   cellDeleted,
   dashboardImportFailed,
   dashboardImported,
@@ -33,7 +27,6 @@ import {getDeep} from 'src/utils/wrappers'
 import {
   Dashboard,
   Cell,
-  CellType,
   TimeRange,
   Template,
   TemplateValue,
@@ -465,38 +458,6 @@ export const updateDashboardCell = (dashboard: Dashboard, cell: Cell) => async (
   try {
     const {data} = await updateDashboardCellAJAX(cell)
     dispatch(syncDashboardCell(dashboard, data))
-  } catch (error) {
-    console.error(error)
-    dispatch(errorThrown(error))
-  }
-}
-
-export const addDashboardCellAsync = (
-  dashboard: Dashboard,
-  cellType?: CellType
-) => async (dispatch: Dispatch<Action>): Promise<void> => {
-  try {
-    const {data} = await addDashboardCellAJAX(
-      dashboard,
-      getNewDashboardCell(dashboard, cellType)
-    )
-    dispatch(addDashboardCell(dashboard, data))
-    dispatch(notify(cellAdded(data.name)))
-  } catch (error) {
-    console.error(error)
-    dispatch(errorThrown(error))
-  }
-}
-
-export const cloneDashboardCellAsync = (
-  dashboard: Dashboard,
-  cell: Cell
-) => async (dispatch: Dispatch<Action>): Promise<void> => {
-  try {
-    const clonedCell = getClonedDashboardCell(dashboard, cell)
-    const {data} = await addDashboardCellAJAX(dashboard, clonedCell)
-    dispatch(addDashboardCell(dashboard, data))
-    dispatch(notify(cellAdded(clonedCell.name)))
   } catch (error) {
     console.error(error)
     dispatch(errorThrown(error))

@@ -3,7 +3,7 @@ import AJAX from 'src/utils/ajax'
 
 // Types
 import {Dashboard} from 'src/types/v2'
-import {DashboardSwitcherLinks, Cell, NewCell} from 'src/types/v2/dashboards'
+import {DashboardSwitcherLinks} from 'src/types/v2/dashboards'
 
 // Utils
 import {

@@ -25,7 +25,7 @@ class DashboardEmpty extends Component<Props & Actions> {
     super(props)
   }
 
-  public handleAddCell = type => async () => {
+  public handleAddCell = __ => async () => {
     const {dashboard, addDashboardCell} = this.props
     await addDashboardCell(dashboard)
   }

@@ -25,8 +25,8 @@ import {ErrorHandling} from 'src/shared/decorators/errors'
 
 interface Props {
   cells: Cell[]
-  onCloneCell?: () => void
-  onDeleteCell?: () => void
+  onCloneCell?: (cell: Cell) => void
+  onDeleteCell?: (cell: Cell) => void
   onPositionChange?: (cells: Cell[]) => void
 }
 
