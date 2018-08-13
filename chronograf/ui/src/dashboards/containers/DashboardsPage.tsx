@@ -18,11 +18,7 @@ import {
 import {retainRangesDashTimeV1 as retainRangesDashTimeV1Action} from 'src/dashboards/actions'
 import {notify as notifyAction} from 'src/shared/actions/notifications'
 
-import {
-  NEW_DASHBOARD,
-  DEFAULT_DASHBOARD_NAME,
-  NEW_DEFAULT_DASHBOARD_CELL,
-} from 'src/dashboards/constants'
+import {NEW_DASHBOARD, DEFAULT_DASHBOARD_NAME} from 'src/dashboards/constants'
 import {ErrorHandling} from 'src/shared/decorators/errors'
 import {
   dashboardExported,
@@ -130,13 +126,20 @@ class DashboardsPage extends PureComponent<Props> {
   private handleImportDashboard = async (
     dashboard: Dashboard
   ): Promise<void> => {
+    const defaultCell = {
+      x: 0,
+      y: 0,
+      w: 4,
+      h: 4,
+    }
+
     const {links} = this.props
     const name = _.get(dashboard, 'name', DEFAULT_DASHBOARD_NAME)
     const cellsWithDefaultsApplied = getDeep<DashboardCell[]>(
       dashboard,
       'cells',
       []
-    ).map(c => ({...NEW_DEFAULT_DASHBOARD_CELL, ...c}))
+    ).map(c => ({...defaultCell, ...c}))
 
     await this.props.handleImportDashboard(links.dashboards, {
       ...dashboard,

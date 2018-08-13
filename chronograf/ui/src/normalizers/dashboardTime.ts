@@ -1,9 +1,5 @@
 import _ from 'lodash'
-import {TimeRange} from 'src/types'
-
-interface Range extends TimeRange {
-  dashboardID: string
-}
+import {DashboardTimeRange as Range} from 'src/types/localStorage'
 
 const dashtime = (ranges: Range[]): Range[] => {
   if (!Array.isArray(ranges)) {

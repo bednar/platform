@@ -2,9 +2,8 @@ import {
   DEFAULT_VERTICAL_TIME_AXIS,
   DEFAULT_FIX_FIRST_COLUMN,
 } from 'src/shared/constants/tableGraph'
-import {QueryConfig} from 'src/types'
+import {Cell, QueryConfig} from 'src/types'
 import {CellType, Dashboard, DecimalPlaces} from 'src/types/dashboards'
-import {DashboardCell} from 'src/types/v2/dashboards'
 
 export const UNTITLED_GRAPH: string = 'Untitled Graph'
 
@@ -49,14 +48,22 @@ export const FORMAT_OPTIONS: Array<{text: string}> = [
 ]
 
 export type NewDefaultCell = Pick<
-  DashboardCell,
-  Exclude<keyof DashboardCell, 'id' | 'ref'>
+  Cell,
+  Exclude<keyof Cell, 'i' | 'axes' | 'colors' | 'links' | 'legend'>
 >
 export const NEW_DEFAULT_DASHBOARD_CELL: NewDefaultCell = {
   x: 0,
   y: 0,
   w: 4,
   h: 4,
+  name: UNTITLED_GRAPH,
+  type: CellType.Line,
+  queries: [],
+  tableOptions: DEFAULT_TABLE_OPTIONS,
+  timeFormat: DEFAULT_TIME_FORMAT,
+  decimalPlaces: DEFAULT_DECIMAL_PLACES,
+  fieldOptions: [DEFAULT_TIME_FIELD],
+  inView: true,
 }
 
 interface EmptyDefaultDashboardCell {
@@ -66,7 +73,6 @@ interface EmptyDefaultDashboardCell {
   name: string
   type: CellType
 }
-
 type EmptyDefaultDashboard = Pick<
   Dashboard,
   Exclude<keyof Dashboard, 'templates' | 'links' | 'organization' | 'cells'>
@@ -96,6 +102,7 @@ type NewDefaultDashboard = Pick<
 export const DEFAULT_DASHBOARD_NAME = 'Name This Dashboard'
 export const NEW_DASHBOARD: NewDefaultDashboard = {
   name: DEFAULT_DASHBOARD_NAME,
+  cells: [NEW_DEFAULT_DASHBOARD_CELL],
 }
 
 export const TYPE_QUERY_CONFIG: string = 'queryConfig'
@@ -111,3 +118,11 @@ export enum CEOTabs {
 export const MAX_TOLOCALESTRING_VAL = 20 // 20 is the max input to maximumFractionDigits in spec for tolocalestring
 export const MIN_DECIMAL_PLACES = '0'
 export const MAX_DECIMAL_PLACES = MAX_TOLOCALESTRING_VAL.toString()
+
+// used in importing dashboards and mapping sources
+export const DYNAMIC_SOURCE = 'dynamic'
+export const DYNAMIC_SOURCE_INFO = {
+  name: 'Dynamic Source',
+  id: DYNAMIC_SOURCE,
+  link: '',
+}

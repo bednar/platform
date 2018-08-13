@@ -23,7 +23,7 @@ describe('dashboards reducer', () => {
     const d2 = {...dashboard, id: '2'}
     const state = [dashboard, d2]
     const expected = [dashboard]
-    const actual = reducer(state, deleteDashboard(d2))
+    const actual = reducer(state, deleteDashboard(d2.id))
 
     expect(actual).toEqual(expected)
   })

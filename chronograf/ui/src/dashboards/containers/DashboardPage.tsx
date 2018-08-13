@@ -275,14 +275,6 @@ class DashboardPage extends Component<Props, State> {
     return topInView && bottomInView
   }
 
-  private handleSaveEditedCell = async (
-    newCell: DashboardsModels.Cell
-  ): Promise<void> => {
-    const {dashboard, handleHideCellEditorOverlay} = this.props
-    await this.props.updateDashboardCell(dashboard, newCell)
-    handleHideCellEditorOverlay()
-  }
-
   private handleChooseTimeRange = (
     timeRange: QueriesModels.TimeRange
   ): void => {
@@ -355,7 +347,7 @@ class DashboardPage extends Component<Props, State> {
 
     try {
       const dashboardLinks = await loadDashboardLinks(
-        links.dashboard,
+        links.dashboards,
         activeDashboard
       )
 

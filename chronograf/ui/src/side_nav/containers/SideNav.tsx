@@ -7,9 +7,6 @@ import _ from 'lodash'
 // Components
 import {NavBlock, NavHeader} from 'src/side_nav/components/NavItems'
 
-// Constants
-import {DEFAULT_HOME_PAGE} from 'src/shared/constants'
-
 // Types
 import {Source} from 'src/types/v2'
 
@@ -34,7 +31,7 @@ class SideNav extends PureComponent<Props> {
     const id = query.sourceID || _.get(defaultSource, 'id', 0)
 
     const sourceParam = `?sourceID=${id}`
-    const isDefaultPage = pathname.split('/').includes(DEFAULT_HOME_PAGE)
+    const isDefaultPage = pathname.split('/').includes('status')
 
     return isHidden ? null : (
       <nav className="sidebar">

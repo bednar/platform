@@ -27,7 +27,7 @@ export interface DataExplorerQueryConfigs {
   [id: string]: QueryConfig
 }
 
-interface DashboardTimeRange {
+export interface DashboardTimeRange {
   dashboardID: number
   defaultGroupBy: string
   format: string
