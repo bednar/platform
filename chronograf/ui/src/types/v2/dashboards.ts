@@ -58,16 +58,16 @@ export interface DecimalPlaces {
   digits: number
 }
 
-export interface Cell {
+export interface View {
   id: string
   name: string
-  visualization: V1Visualization | {}
+  properties: V1Visualization | {}
 }
 
 export interface V1Visualization {
   type: string
   queries: CellQuery[]
-  visualizationType: VisualizationType
+  visualizationType: ViewType
   axes: Axes
   colors: ColorString[]
   tableOptions: TableOptions
@@ -80,7 +80,7 @@ export interface V1Visualization {
   inView: boolean
 }
 
-export enum VisualizationType {
+export enum ViewType {
   Line = 'line',
   Stacked = 'line-stacked',
   StepPlot = 'line-stepplot',
@@ -100,7 +100,7 @@ interface DashboardLinks {
 
 export interface Dashboard {
   id: string
-  cells: DashboardCell[]
+  cells: Cell[]
   name: string
   links: DashboardLinks
   meta?: {[x: string]: any}
@@ -115,13 +115,15 @@ interface DashboardFileMetaSection {
   chronografVersion?: string
 }
 
-export interface DashboardCell {
+export interface Cell {
   x: number
   y: number
   w: number
   h: number
   ref: string
 }
+
+export type NewCell = Pick<Cell, Exclude<keyof Cell, 'ref'>>
 
 export enum ThresholdType {
   Text = 'text',

@@ -2,6 +2,7 @@
 import {Dispatch} from 'redux'
 import {Dashboard} from 'src/types/v2'
 import {replace} from 'react-router-redux'
+import uuid from 'uuid'
 
 // APIs
 import {
@@ -18,6 +19,9 @@ import {
   deleteTimeRange,
   updateTimeRangeFromQueryParams,
 } from 'src/dashboards/actions/v2/ranges'
+
+// Utils
+import {getNewDashboardCell} from 'src/dashboards/utils/cellGetters'
 
 // Constants
 import * as copy from 'src/shared/copy/notifications'
@@ -185,5 +189,23 @@ export const updateDashboardAsync = (dashboard: Dashboard) => async (
   } catch (error) {
     console.error(error)
     dispatch(notify(copy.dashboardUpdateFailed()))
+  }
+}
+
+export const addCellAsync = (dashboard: Dashboard) => async (
+  dispatch: Dispatch<Action>
+): Promise<void> => {
+  const cell = getNewDashboardCell(dashboard)
+  const dash = {
+    ...dashboard,
+    cells: [...dashboard.cells, {...cell, ref: uuid.v1()}],
+  }
+
+  try {
+    const updatedDashboard = await updateDashboardAJAX(dash)
+    dispatch(loadDashboard(updatedDashboard))
+    dispatch(notify(copy.cellAdded()))
+  } catch (error) {
+    console.error(error)
   }
 }

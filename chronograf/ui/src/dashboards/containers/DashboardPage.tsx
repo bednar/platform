@@ -46,7 +46,7 @@ import * as NotificationsActions from 'src/types/actions/notifications'
 import * as DashboardsModels from 'src/types/dashboards'
 
 import {Links, Source} from 'src/types/v2'
-import {Dashboard} from 'src/types/v2/dashboards'
+import {Dashboard, Cell} from 'src/types/v2/dashboards'
 
 interface Props extends ManualRefreshProps, WithRouterProps {
   links: Links
@@ -76,10 +76,11 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   thresholdsListColors: ColorsModels.ColorNumber[]
   gaugeColors: ColorsModels.ColorNumber[]
   lineColors: ColorsModels.ColorString[]
+  addCell: typeof dashboardActions.addCellAsync
   getDashboard: typeof dashboardActions.getDashboardAsync
   setDashTimeV1: typeof dashboardActions.setDashTimeV1
   setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
-  updateDashboard: typeof dashboardActions.updateDashboard
+  updateDashboard: typeof dashboardActions.updateDashboardAsync
   putDashboard: typeof dashboardActions.putDashboard
   addDashboardCellAsync: typeof dashboardActions.addDashboardCellAsync
   editCellQueryStatus: typeof dashboardActions.editCellQueryStatus
@@ -219,7 +220,7 @@ class DashboardPage extends Component<Props, State> {
           handleChooseTimeRange={this.handleChooseTimeRange}
           handleClickPresentationButton={handleClickPresentationButton}
         />
-        {dashboard ? (
+        {!!dashboard && (
           <DashboardComponent
             source={source}
             sources={sources}
@@ -236,7 +237,7 @@ class DashboardPage extends Component<Props, State> {
             onCloneCell={this.handleCloneCell}
             templatesIncludingDashTime={templatesIncludingDashTime}
           />
-        ) : null}
+        )}
       </div>
     )
   }
@@ -290,16 +291,16 @@ class DashboardPage extends Component<Props, State> {
     })
   }
 
-  private handleUpdatePosition = (cells: DashboardsModels.Cell[]): void => {
+  private handleUpdatePosition = (cells: Cell[]): void => {
     const {dashboard} = this.props
     const newDashboard = {...dashboard, cells}
 
     this.props.updateDashboard(newDashboard)
   }
 
-  private handleAddCell = (): void => {
-    const {dashboard} = this.props
-    this.props.addDashboardCellAsync(dashboard)
+  private handleAddCell = async (): Promise<void> => {
+    const {dashboard, addCell} = this.props
+    await addCell(dashboard)
   }
 
   private handleCloneCell = (cell: DashboardsModels.Cell): void => {
@@ -315,7 +316,7 @@ class DashboardPage extends Component<Props, State> {
     this.updateActiveDashboard()
   }
 
-  private handleDeleteDashboardCell = (cell: DashboardsModels.Cell): void => {
+  private handleDeleteDashboardCell = (cell: Cell): void => {
     const {dashboard} = this.props
     this.props.deleteDashboardCellAsync(dashboard, cell)
   }
@@ -407,7 +408,7 @@ const mdtp: Partial<Props> = {
   setDashTimeV1: dashboardActions.setDashTimeV1,
   setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
   updateDashboard: dashboardActions.updateDashboardAsync,
-  addDashboardCellAsync: dashboardActions.addDashboardCellAsync,
+  addCell: dashboardActions.addCellAsync,
   editCellQueryStatus: dashboardActions.editCellQueryStatus,
   updateDashboardCell: dashboardActions.updateDashboardCell,
   cloneDashboardCellAsync: dashboardActions.cloneDashboardCellAsync,

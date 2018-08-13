@@ -482,11 +482,11 @@ export const dashboardDeleteFailed = (
   message: `Failed to delete Dashboard ${name}: ${errorMessage}.`,
 })
 
-export const cellAdded = (name: string): Notification => ({
+export const cellAdded = (): Notification => ({
   ...defaultSuccessNotification,
   icon: 'dash-h',
   duration: 1900,
-  message: `Added "${name}" to dashboard.`,
+  message: `Added new cell to dashboard.`,
 })
 
 export const cellDeleted = (name: string): Notification => ({
