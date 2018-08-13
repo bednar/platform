@@ -43,7 +43,7 @@ type dashboardResponse struct {
 
 func newDashboardResponse(d *platform.Dashboard) dashboardResponse {
 	if d.Cells == nil {
-		d.Cells = []platform.DashboardCell{}
+		d.Cells = []platform.Cell{}
 	}
 	return dashboardResponse{
 		Links: dashboardLinks{

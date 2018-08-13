@@ -13,17 +13,17 @@ import (
 )
 
 const (
-	cellOneID   = "020f755c3c082000"
-	cellTwoID   = "020f755c3c082001"
-	cellThreeID = "020f755c3c082002"
+	viewOneID   = "020f755c3c082000"
+	viewTwoID   = "020f755c3c082001"
+	viewThreeID = "020f755c3c082002"
 )
 
-var cellCmpOptions = cmp.Options{
+var viewCmpOptions = cmp.Options{
 	cmp.Comparer(func(x, y []byte) bool {
 		return bytes.Equal(x, y)
 	}),
-	cmp.Transformer("Sort", func(in []*platform.Cell) []*platform.Cell {
-		out := append([]*platform.Cell(nil), in...) // Copy input to avoid mutating it
+	cmp.Transformer("Sort", func(in []*platform.View) []*platform.View {
+		out := append([]*platform.View(nil), in...) // Copy input to avoid mutating it
 		sort.Slice(out, func(i, j int) bool {
 			return out[i].ID.String() > out[j].ID.String()
 		})
@@ -31,73 +31,73 @@ var cellCmpOptions = cmp.Options{
 	}),
 }
 
-// CellFields will include the IDGenerator, and cells
-type CellFields struct {
+// ViewFields will include the IDGenerator, and views
+type ViewFields struct {
 	IDGenerator platform.IDGenerator
-	Cells       []*platform.Cell
+	Views       []*platform.View
 }
 
-// CreateCell testing
-func CreateCell(
-	init func(CellFields, *testing.T) (platform.CellService, func()),
+// CreateView testing
+func CreateView(
+	init func(ViewFields, *testing.T) (platform.ViewService, func()),
 	t *testing.T,
 ) {
 	type args struct {
-		cell *platform.Cell
+		view *platform.View
 	}
 	type wants struct {
 		err   error
-		cells []*platform.Cell
+		views []*platform.View
 	}
 
 	tests := []struct {
 		name   string
-		fields CellFields
+		fields ViewFields
 		args   args
 		wants  wants
 	}{
 		{
-			name: "basic create cell",
-			fields: CellFields{
+			name: "basic create view",
+			fields: ViewFields{
 				IDGenerator: &mock.IDGenerator{
 					IDFn: func() platform.ID {
-						return idFromString(t, cellTwoID)
+						return idFromString(t, viewTwoID)
 					},
 				},
-				Cells: []*platform.Cell{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
 					},
 				},
 			},
 			args: args{
-				cell: &platform.Cell{
-					CellContents: platform.CellContents{
-						Name: "cell2",
+				view: &platform.View{
+					ViewContents: platform.ViewContents{
+						Name: "view2",
 					},
-					Visualization: platform.V1Visualization{
+					Properties: platform.V1ViewProperties{
 						TimeFormat: "rfc3339",
 					},
 				},
 			},
 			wants: wants{
-				cells: []*platform.Cell{
+				views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -111,7 +111,7 @@ func CreateCell(
 			s, done := init(tt.fields, t)
 			defer done()
 			ctx := context.TODO()
-			err := s.CreateCell(ctx, tt.args.cell)
+			err := s.CreateView(ctx, tt.args.view)
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
 			}
@@ -121,22 +121,22 @@ func CreateCell(
 					t.Fatalf("expected error messages to match '%v' got '%v'", tt.wants.err, err.Error())
 				}
 			}
-			defer s.DeleteCell(ctx, tt.args.cell.ID)
+			defer s.DeleteView(ctx, tt.args.view.ID)
 
-			cells, _, err := s.FindCells(ctx, platform.CellFilter{})
+			views, _, err := s.FindViews(ctx, platform.ViewFilter{})
 			if err != nil {
-				t.Fatalf("failed to retrieve cells: %v", err)
+				t.Fatalf("failed to retrieve views: %v", err)
 			}
-			if diff := cmp.Diff(cells, tt.wants.cells, cellCmpOptions...); diff != "" {
-				t.Errorf("cells are different -got/+want\ndiff %s", diff)
+			if diff := cmp.Diff(views, tt.wants.views, viewCmpOptions...); diff != "" {
+				t.Errorf("views are different -got/+want\ndiff %s", diff)
 			}
 		})
 	}
 }
 
-// FindCellByID testing
-func FindCellByID(
-	init func(CellFields, *testing.T) (platform.CellService, func()),
+// FindViewByID testing
+func FindViewByID(
+	init func(ViewFields, *testing.T) (platform.ViewService, func()),
 	t *testing.T,
 ) {
 	type args struct {
@@ -144,47 +144,47 @@ func FindCellByID(
 	}
 	type wants struct {
 		err  error
-		cell *platform.Cell
+		view *platform.View
 	}
 
 	tests := []struct {
 		name   string
-		fields CellFields
+		fields ViewFields
 		args   args
 		wants  wants
 	}{
 		{
-			name: "basic find cell by id",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "basic find view by id",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				id: idFromString(t, cellTwoID),
+				id: idFromString(t, viewTwoID),
 			},
 			wants: wants{
-				cell: &platform.Cell{
-					CellContents: platform.CellContents{
-						ID:   idFromString(t, cellTwoID),
-						Name: "cell2",
+				view: &platform.View{
+					ViewContents: platform.ViewContents{
+						ID:   idFromString(t, viewTwoID),
+						Name: "view2",
 					},
-					Visualization: platform.V1Visualization{
+					Properties: platform.V1ViewProperties{
 						TimeFormat: "rfc3339",
 					},
 				},
@@ -198,7 +198,7 @@ func FindCellByID(
 			defer done()
 			ctx := context.TODO()
 
-			cell, err := s.FindCellByID(ctx, tt.args.id)
+			view, err := s.FindViewByID(ctx, tt.args.id)
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected errors to be equal '%v' got '%v'", tt.wants.err, err)
 			}
@@ -209,16 +209,16 @@ func FindCellByID(
 				}
 			}
 
-			if diff := cmp.Diff(cell, tt.wants.cell, cellCmpOptions...); diff != "" {
-				t.Errorf("cell is different -got/+want\ndiff %s", diff)
+			if diff := cmp.Diff(view, tt.wants.view, viewCmpOptions...); diff != "" {
+				t.Errorf("view is different -got/+want\ndiff %s", diff)
 			}
 		})
 	}
 }
 
-// FindCells testing
-func FindCells(
-	init func(CellFields, *testing.T) (platform.CellService, func()),
+// FindViews testing
+func FindViews(
+	init func(ViewFields, *testing.T) (platform.ViewService, func()),
 	t *testing.T,
 ) {
 	type args struct {
@@ -227,32 +227,32 @@ func FindCells(
 	}
 
 	type wants struct {
-		cells []*platform.Cell
+		views []*platform.View
 		err   error
 	}
 	tests := []struct {
 		name   string
-		fields CellFields
+		fields ViewFields
 		args   args
 		wants  wants
 	}{
 		{
-			name: "find all cells",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "find all views",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -260,20 +260,20 @@ func FindCells(
 			},
 			args: args{},
 			wants: wants{
-				cells: []*platform.Cell{
+				views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -281,38 +281,38 @@ func FindCells(
 			},
 		},
 		{
-			name: "find cell by id",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "find view by id",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				ID: idFromString(t, cellTwoID),
+				ID: idFromString(t, viewTwoID),
 			},
 			wants: wants{
-				cells: []*platform.Cell{
+				views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -327,12 +327,12 @@ func FindCells(
 			defer done()
 			ctx := context.TODO()
 
-			filter := platform.CellFilter{}
+			filter := platform.ViewFilter{}
 			if tt.args.ID != nil {
 				filter.ID = &tt.args.ID
 			}
 
-			cells, _, err := s.FindCells(ctx, filter)
+			views, _, err := s.FindViews(ctx, filter)
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected errors to be equal '%v' got '%v'", tt.wants.err, err)
 			}
@@ -343,16 +343,16 @@ func FindCells(
 				}
 			}
 
-			if diff := cmp.Diff(cells, tt.wants.cells, cellCmpOptions...); diff != "" {
-				t.Errorf("cells are different -got/+want\ndiff %s", diff)
+			if diff := cmp.Diff(views, tt.wants.views, viewCmpOptions...); diff != "" {
+				t.Errorf("views are different -got/+want\ndiff %s", diff)
 			}
 		})
 	}
 }
 
-// DeleteCell testing
-func DeleteCell(
-	init func(CellFields, *testing.T) (platform.CellService, func()),
+// DeleteView testing
+func DeleteView(
+	init func(ViewFields, *testing.T) (platform.ViewService, func()),
 	t *testing.T,
 ) {
 	type args struct {
@@ -360,48 +360,48 @@ func DeleteCell(
 	}
 	type wants struct {
 		err   error
-		cells []*platform.Cell
+		views []*platform.View
 	}
 
 	tests := []struct {
 		name   string
-		fields CellFields
+		fields ViewFields
 		args   args
 		wants  wants
 	}{
 		{
-			name: "delete cells using exist id",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "delete views using exist id",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				ID: idFromString(t, cellOneID),
+				ID: idFromString(t, viewOneID),
 			},
 			wants: wants{
-				cells: []*platform.Cell{
+				views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -409,46 +409,46 @@ func DeleteCell(
 			},
 		},
 		{
-			name: "delete cells using id that does not exist",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "delete views using id that does not exist",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				ID: idFromString(t, cellThreeID),
+				ID: idFromString(t, viewThreeID),
 			},
 			wants: wants{
-				err: fmt.Errorf("cell not found"),
-				cells: []*platform.Cell{
+				err: fmt.Errorf("View not found"),
+				views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
@@ -462,7 +462,7 @@ func DeleteCell(
 			s, done := init(tt.fields, t)
 			defer done()
 			ctx := context.TODO()
-			err := s.DeleteCell(ctx, tt.args.ID)
+			err := s.DeleteView(ctx, tt.args.ID)
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
 			}
@@ -473,110 +473,110 @@ func DeleteCell(
 				}
 			}
 
-			filter := platform.CellFilter{}
-			cells, _, err := s.FindCells(ctx, filter)
+			filter := platform.ViewFilter{}
+			views, _, err := s.FindViews(ctx, filter)
 			if err != nil {
-				t.Fatalf("failed to retrieve cells: %v", err)
+				t.Fatalf("failed to retrieve views: %v", err)
 			}
-			if diff := cmp.Diff(cells, tt.wants.cells, cellCmpOptions...); diff != "" {
-				t.Errorf("cells are different -got/+want\ndiff %s", diff)
+			if diff := cmp.Diff(views, tt.wants.views, viewCmpOptions...); diff != "" {
+				t.Errorf("views are different -got/+want\ndiff %s", diff)
 			}
 		})
 	}
 }
 
-// UpdateCell testing
-func UpdateCell(
-	init func(CellFields, *testing.T) (platform.CellService, func()),
+// UpdateView testing
+func UpdateView(
+	init func(ViewFields, *testing.T) (platform.ViewService, func()),
 	t *testing.T,
 ) {
 	type args struct {
-		name          string
-		visualization platform.Visualization
-		id            platform.ID
+		name       string
+		properties platform.ViewProperties
+		id         platform.ID
 	}
 	type wants struct {
 		err  error
-		cell *platform.Cell
+		view *platform.View
 	}
 
 	tests := []struct {
 		name   string
-		fields CellFields
+		fields ViewFields
 		args   args
 		wants  wants
 	}{
 		{
 			name: "update name",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				id:   idFromString(t, cellOneID),
+				id:   idFromString(t, viewOneID),
 				name: "changed",
 			},
 			wants: wants{
-				cell: &platform.Cell{
-					CellContents: platform.CellContents{
-						ID:   idFromString(t, cellOneID),
+				view: &platform.View{
+					ViewContents: platform.ViewContents{
+						ID:   idFromString(t, viewOneID),
 						Name: "changed",
 					},
-					Visualization: platform.EmptyVisualization{},
+					Properties: platform.EmptyViewProperties{},
 				},
 			},
 		},
 		{
-			name: "update visualization",
-			fields: CellFields{
-				Cells: []*platform.Cell{
+			name: "update properties",
+			fields: ViewFields{
+				Views: []*platform.View{
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellOneID),
-							Name: "cell1",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewOneID),
+							Name: "view1",
 						},
-						Visualization: platform.EmptyVisualization{},
+						Properties: platform.EmptyViewProperties{},
 					},
 					{
-						CellContents: platform.CellContents{
-							ID:   idFromString(t, cellTwoID),
-							Name: "cell2",
+						ViewContents: platform.ViewContents{
+							ID:   idFromString(t, viewTwoID),
+							Name: "view2",
 						},
-						Visualization: platform.V1Visualization{
+						Properties: platform.V1ViewProperties{
 							TimeFormat: "rfc3339",
 						},
 					},
 				},
 			},
 			args: args{
-				id: idFromString(t, cellOneID),
-				visualization: platform.V1Visualization{
+				id: idFromString(t, viewOneID),
+				properties: platform.V1ViewProperties{
 					TimeFormat: "rfc3339",
 				},
 			},
 			wants: wants{
-				cell: &platform.Cell{
-					CellContents: platform.CellContents{
-						ID:   idFromString(t, cellOneID),
-						Name: "cell1",
+				view: &platform.View{
+					ViewContents: platform.ViewContents{
+						ID:   idFromString(t, viewOneID),
+						Name: "view1",
 					},
-					Visualization: platform.V1Visualization{
+					Properties: platform.V1ViewProperties{
 						TimeFormat: "rfc3339",
 					},
 				},
@@ -590,15 +590,15 @@ func UpdateCell(
 			defer done()
 			ctx := context.TODO()
 
-			upd := platform.CellUpdate{}
+			upd := platform.ViewUpdate{}
 			if tt.args.name != "" {
 				upd.Name = &tt.args.name
 			}
-			if tt.args.visualization != nil {
-				upd.Visualization = tt.args.visualization
+			if tt.args.properties != nil {
+				upd.Properties = tt.args.properties
 			}
 
-			cell, err := s.UpdateCell(ctx, tt.args.id, upd)
+			view, err := s.UpdateView(ctx, tt.args.id, upd)
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
 			}
@@ -609,8 +609,8 @@ func UpdateCell(
 				}
 			}
 
-			if diff := cmp.Diff(cell, tt.wants.cell, cellCmpOptions...); diff != "" {
-				t.Errorf("cell is different -got/+want\ndiff %s", diff)
+			if diff := cmp.Diff(view, tt.wants.view, viewCmpOptions...); diff != "" {
+				t.Errorf("view is different -got/+want\ndiff %s", diff)
 			}
 		})
 	}

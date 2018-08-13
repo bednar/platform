@@ -8,44 +8,44 @@ import (
 	platformtesting "github.com/influxdata/platform/testing"
 )
 
-func initCellService(f platformtesting.CellFields, t *testing.T) (platform.CellService, func()) {
+func initViewService(f platformtesting.ViewFields, t *testing.T) (platform.ViewService, func()) {
 	c, closeFn, err := NewTestClient()
 	if err != nil {
 		t.Fatalf("failed to create new bolt client: %v", err)
 	}
 	c.IDGenerator = f.IDGenerator
 	ctx := context.TODO()
-	for _, b := range f.Cells {
-		if err := c.PutCell(ctx, b); err != nil {
+	for _, b := range f.Views {
+		if err := c.PutView(ctx, b); err != nil {
 			t.Fatalf("failed to populate cells")
 		}
 	}
 	return c, func() {
 		defer closeFn()
-		for _, b := range f.Cells {
-			if err := c.DeleteCell(ctx, b.ID); err != nil {
+		for _, b := range f.Views {
+			if err := c.DeleteView(ctx, b.ID); err != nil {
 				t.Logf("failed to remove cell: %v", err)
 			}
 		}
 	}
 }
 
-func TestCellService_CreateCell(t *testing.T) {
-	platformtesting.CreateCell(initCellService, t)
+func TestViewService_CreateView(t *testing.T) {
+	platformtesting.CreateView(initViewService, t)
 }
 
-func TestCellService_FindCellByID(t *testing.T) {
-	platformtesting.FindCellByID(initCellService, t)
+func TestViewService_FindViewByID(t *testing.T) {
+	platformtesting.FindViewByID(initViewService, t)
 }
 
-func TestCellService_FindCells(t *testing.T) {
-	platformtesting.FindCells(initCellService, t)
+func TestViewService_FindViews(t *testing.T) {
+	platformtesting.FindViews(initViewService, t)
 }
 
-func TestCellService_DeleteCell(t *testing.T) {
-	platformtesting.DeleteCell(initCellService, t)
+func TestViewService_DeleteView(t *testing.T) {
+	platformtesting.DeleteView(initViewService, t)
 }
 
-func TestCellService_UpdateCell(t *testing.T) {
-	platformtesting.UpdateCell(initCellService, t)
+func TestViewService_UpdateView(t *testing.T) {
+	platformtesting.UpdateView(initViewService, t)
 }

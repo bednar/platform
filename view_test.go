@@ -8,9 +8,9 @@ import (
 	"github.com/influxdata/platform"
 )
 
-func TestCell_MarshalJSON(t *testing.T) {
+func TestView_MarshalJSON(t *testing.T) {
 	type args struct {
-		cell platform.Cell
+		view platform.View
 	}
 	type wants struct {
 		json string
@@ -22,12 +22,12 @@ func TestCell_MarshalJSON(t *testing.T) {
 	}{
 		{
 			args: args{
-				cell: platform.Cell{
-					CellContents: platform.CellContents{
+				view: platform.View{
+					ViewContents: platform.ViewContents{
 						ID:   platform.ID("0"),
 						Name: "hello",
 					},
-					Visualization: platform.V1Visualization{
+					Properties: platform.V1ViewProperties{
 						Type: "line",
 					},
 				},
@@ -37,7 +37,7 @@ func TestCell_MarshalJSON(t *testing.T) {
 {
   "id": "30",
   "name": "hello",
-  "visualization": {
+  "properties": {
     "type": "chronograf-v1",
     "queries": null,
     "axes": null,
@@ -69,7 +69,7 @@ func TestCell_MarshalJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b, err := json.MarshalIndent(tt.args.cell, "", "  ")
+			b, err := json.MarshalIndent(tt.args.view, "", "  ")
 			if err != nil {
 				t.Fatalf("error marshalling json")
 			}

@@ -103,8 +103,8 @@ func (c *Client) initialize(ctx context.Context) error {
 			return err
 		}
 
-		// Always create Cells bucket.
-		if err := c.initializeCells(ctx, tx); err != nil {
+		// Always create Views bucket.
+		if err := c.initializeViews(ctx, tx); err != nil {
 			return err
 		}
 		return nil

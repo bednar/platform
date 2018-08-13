@@ -13,19 +13,19 @@ var (
 	cellBucket = []byte("cellsv2")
 )
 
-func (c *Client) initializeCells(ctx context.Context, tx *bolt.Tx) error {
+func (c *Client) initializeViews(ctx context.Context, tx *bolt.Tx) error {
 	if _, err := tx.CreateBucketIfNotExists([]byte(cellBucket)); err != nil {
 		return err
 	}
 	return nil
 }
 
-// FindCellByID retrieves a cell by id.
-func (c *Client) FindCellByID(ctx context.Context, id platform.ID) (*platform.Cell, error) {
-	var d *platform.Cell
+// FindViewByID retrieves a cell by id.
+func (c *Client) FindViewByID(ctx context.Context, id platform.ID) (*platform.View, error) {
+	var d *platform.View
 
 	err := c.db.View(func(tx *bolt.Tx) error {
-		dash, err := c.findCellByID(ctx, tx, id)
+		dash, err := c.findViewByID(ctx, tx, id)
 		if err != nil {
 			return err
 		}
@@ -40,13 +40,13 @@ func (c *Client) FindCellByID(ctx context.Context, id platform.ID) (*platform.Ce
 	return d, nil
 }
 
-func (c *Client) findCellByID(ctx context.Context, tx *bolt.Tx, id platform.ID) (*platform.Cell, error) {
-	var d platform.Cell
+func (c *Client) findViewByID(ctx context.Context, tx *bolt.Tx, id platform.ID) (*platform.View, error) {
+	var d platform.View
 
 	v := tx.Bucket(cellBucket).Get([]byte(id))
 
 	if len(v) == 0 {
-		return nil, platform.ErrCellNotFound
+		return nil, platform.ErrViewNotFound
 	}
 
 	if err := json.Unmarshal(v, &d); err != nil {
@@ -56,16 +56,16 @@ func (c *Client) findCellByID(ctx context.Context, tx *bolt.Tx, id platform.ID) 
 	return &d, nil
 }
 
-// FindCell retrieves a cell using an arbitrary cell filter.
-func (c *Client) FindCell(ctx context.Context, filter platform.CellFilter) (*platform.Cell, error) {
+// FindView retrieves a cell using an arbitrary cell filter.
+func (c *Client) FindView(ctx context.Context, filter platform.ViewFilter) (*platform.View, error) {
 	if filter.ID != nil {
-		return c.FindCellByID(ctx, *filter.ID)
+		return c.FindViewByID(ctx, *filter.ID)
 	}
 
-	var d *platform.Cell
+	var d *platform.View
 	err := c.db.View(func(tx *bolt.Tx) error {
-		filterFn := filterCellsFn(filter)
-		return c.forEachCell(ctx, tx, func(dash *platform.Cell) bool {
+		filterFn := filterViewsFn(filter)
+		return c.forEachView(ctx, tx, func(dash *platform.View) bool {
 			if filterFn(dash) {
 				d = dash
 				return false
@@ -79,36 +79,36 @@ func (c *Client) FindCell(ctx context.Context, filter platform.CellFilter) (*pla
 	}
 
 	if d == nil {
-		return nil, platform.ErrCellNotFound
+		return nil, platform.ErrViewNotFound
 	}
 
 	return d, nil
 }
 
-func filterCellsFn(filter platform.CellFilter) func(d *platform.Cell) bool {
+func filterViewsFn(filter platform.ViewFilter) func(d *platform.View) bool {
 	if filter.ID != nil {
-		return func(d *platform.Cell) bool {
+		return func(d *platform.View) bool {
 			return bytes.Equal(d.ID, *filter.ID)
 		}
 	}
 
-	return func(d *platform.Cell) bool { return true }
+	return func(d *platform.View) bool { return true }
 }
 
-// FindCells retrives all cells that match an arbitrary cell filter.
-func (c *Client) FindCells(ctx context.Context, filter platform.CellFilter) ([]*platform.Cell, int, error) {
+// FindViews retrives all cells that match an arbitrary cell filter.
+func (c *Client) FindViews(ctx context.Context, filter platform.ViewFilter) ([]*platform.View, int, error) {
 	if filter.ID != nil {
-		d, err := c.FindCellByID(ctx, *filter.ID)
+		d, err := c.FindViewByID(ctx, *filter.ID)
 		if err != nil {
 			return nil, 0, err
 		}
 
-		return []*platform.Cell{d}, 1, nil
+		return []*platform.View{d}, 1, nil
 	}
 
-	ds := []*platform.Cell{}
+	ds := []*platform.View{}
 	err := c.db.View(func(tx *bolt.Tx) error {
-		dashs, err := c.findCells(ctx, tx, filter)
+		dashs, err := c.findViews(ctx, tx, filter)
 		if err != nil {
 			return err
 		}
@@ -123,11 +123,11 @@ func (c *Client) FindCells(ctx context.Context, filter platform.CellFilter) ([]*
 	return ds, len(ds), nil
 }
 
-func (c *Client) findCells(ctx context.Context, tx *bolt.Tx, filter platform.CellFilter) ([]*platform.Cell, error) {
-	ds := []*platform.Cell{}
+func (c *Client) findViews(ctx context.Context, tx *bolt.Tx, filter platform.ViewFilter) ([]*platform.View, error) {
+	ds := []*platform.View{}
 
-	filterFn := filterCellsFn(filter)
-	err := c.forEachCell(ctx, tx, func(d *platform.Cell) bool {
+	filterFn := filterViewsFn(filter)
+	err := c.forEachView(ctx, tx, func(d *platform.View) bool {
 		if filterFn(d) {
 			ds = append(ds, d)
 		}
@@ -141,22 +141,22 @@ func (c *Client) findCells(ctx context.Context, tx *bolt.Tx, filter platform.Cel
 	return ds, nil
 }
 
-// CreateCell creates a platform cell and sets d.ID.
-func (c *Client) CreateCell(ctx context.Context, d *platform.Cell) error {
+// CreateView creates a platform cell and sets d.ID.
+func (c *Client) CreateView(ctx context.Context, d *platform.View) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
 		d.ID = c.IDGenerator.ID()
-		return c.putCell(ctx, tx, d)
+		return c.putView(ctx, tx, d)
 	})
 }
 
-// PutCell will put a cell without setting an ID.
-func (c *Client) PutCell(ctx context.Context, d *platform.Cell) error {
+// PutView will put a cell without setting an ID.
+func (c *Client) PutView(ctx context.Context, d *platform.View) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
-		return c.putCell(ctx, tx, d)
+		return c.putView(ctx, tx, d)
 	})
 }
 
-func (c *Client) putCell(ctx context.Context, tx *bolt.Tx, d *platform.Cell) error {
+func (c *Client) putView(ctx context.Context, tx *bolt.Tx, d *platform.View) error {
 	v, err := json.Marshal(d)
 	if err != nil {
 		return err
@@ -167,11 +167,11 @@ func (c *Client) putCell(ctx context.Context, tx *bolt.Tx, d *platform.Cell) err
 	return nil
 }
 
-// forEachCell will iterate through all cells while fn returns true.
-func (c *Client) forEachCell(ctx context.Context, tx *bolt.Tx, fn func(*platform.Cell) bool) error {
+// forEachView will iterate through all cells while fn returns true.
+func (c *Client) forEachView(ctx context.Context, tx *bolt.Tx, fn func(*platform.View) bool) error {
 	cur := tx.Bucket(cellBucket).Cursor()
 	for k, v := cur.First(); k != nil; k, v = cur.Next() {
-		d := &platform.Cell{}
+		d := &platform.View{}
 		if err := json.Unmarshal(v, d); err != nil {
 			return err
 		}
@@ -183,11 +183,11 @@ func (c *Client) forEachCell(ctx context.Context, tx *bolt.Tx, fn func(*platform
 	return nil
 }
 
-// UpdateCell updates a cell according the parameters set on upd.
-func (c *Client) UpdateCell(ctx context.Context, id platform.ID, upd platform.CellUpdate) (*platform.Cell, error) {
-	var d *platform.Cell
+// UpdateView updates a cell according the parameters set on upd.
+func (c *Client) UpdateView(ctx context.Context, id platform.ID, upd platform.ViewUpdate) (*platform.View, error) {
+	var d *platform.View
 	err := c.db.Update(func(tx *bolt.Tx) error {
-		dash, err := c.updateCell(ctx, tx, id, upd)
+		dash, err := c.updateView(ctx, tx, id, upd)
 		if err != nil {
 			return err
 		}
@@ -198,8 +198,8 @@ func (c *Client) UpdateCell(ctx context.Context, id platform.ID, upd platform.Ce
 	return d, err
 }
 
-func (c *Client) updateCell(ctx context.Context, tx *bolt.Tx, id platform.ID, upd platform.CellUpdate) (*platform.Cell, error) {
-	d, err := c.findCellByID(ctx, tx, id)
+func (c *Client) updateView(ctx context.Context, tx *bolt.Tx, id platform.ID, upd platform.ViewUpdate) (*platform.View, error) {
+	d, err := c.findViewByID(ctx, tx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -208,26 +208,26 @@ func (c *Client) updateCell(ctx context.Context, tx *bolt.Tx, id platform.ID, up
 		d.Name = *upd.Name
 	}
 
-	if upd.Visualization != nil {
-		d.Visualization = upd.Visualization
+	if upd.Properties != nil {
+		d.Properties = upd.Properties
 	}
 
-	if err := c.putCell(ctx, tx, d); err != nil {
+	if err := c.putView(ctx, tx, d); err != nil {
 		return nil, err
 	}
 
 	return d, nil
 }
 
-// DeleteCell deletes a cell and prunes it from the index.
-func (c *Client) DeleteCell(ctx context.Context, id platform.ID) error {
+// DeleteView deletes a cell and prunes it from the index.
+func (c *Client) DeleteView(ctx context.Context, id platform.ID) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
-		return c.deleteCell(ctx, tx, id)
+		return c.deleteView(ctx, tx, id)
 	})
 }
 
-func (c *Client) deleteCell(ctx context.Context, tx *bolt.Tx, id platform.ID) error {
-	_, err := c.findCellByID(ctx, tx, id)
+func (c *Client) deleteView(ctx context.Context, tx *bolt.Tx, id platform.ID) error {
+	_, err := c.findViewByID(ctx, tx, id)
 	if err != nil {
 		return err
 	}

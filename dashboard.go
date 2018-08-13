@@ -30,13 +30,13 @@ type DashboardService interface {
 
 // Dashboard represents all visual and query data for a dashboard
 type Dashboard struct {
-	ID    ID              `json:"id"`
-	Name  string          `json:"name"`
-	Cells []DashboardCell `json:"cells"`
+	ID    ID     `json:"id"`
+	Name  string `json:"name"`
+	Cells []Cell `json:"cells"`
 }
 
-// DashboardCell holds positional information about a cell on dashboard and a reference to a cell.
-type DashboardCell struct {
+// Cell holds positional information about a cell on dashboard and a reference to a cell.
+type Cell struct {
 	X   int32  `json:"x"`
 	Y   int32  `json:"y"`
 	W   int32  `json:"w"`
@@ -52,8 +52,8 @@ type DashboardFilter struct {
 
 // DashboardUpdate is the patch structure for a dashboard.
 type DashboardUpdate struct {
-	Name  *string         `json:"name"`
-	Cells []DashboardCell `json:"cells"`
+	Name  *string `json:"name"`
+	Cells []Cell  `json:"cells"`
 }
 
 // Valid returns an error if the dashboard update is invalid.

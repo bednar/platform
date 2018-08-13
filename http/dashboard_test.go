@@ -43,7 +43,7 @@ func TestService_handleGetDashboards(t *testing.T) {
 							{
 								ID:   platform.ID("0"),
 								Name: "hello",
-								Cells: []platform.DashboardCell{
+								Cells: []platform.Cell{
 									{
 										X:   1,
 										Y:   2,
@@ -189,7 +189,7 @@ func TestService_handleGetDashboard(t *testing.T) {
 							return &platform.Dashboard{
 								ID:   mustParseID("020f755c3c082000"),
 								Name: "hello",
-								Cells: []platform.DashboardCell{
+								Cells: []platform.Cell{
 									{
 										X:   1,
 										Y:   2,
@@ -319,7 +319,7 @@ func TestService_handlePostDashboards(t *testing.T) {
 			args: args{
 				dashboard: &platform.Dashboard{
 					Name: "hello",
-					Cells: []platform.DashboardCell{
+					Cells: []platform.Cell{
 						{
 							X:   1,
 							Y:   2,
@@ -489,7 +489,7 @@ func TestService_handlePatchDashboard(t *testing.T) {
 	type args struct {
 		id    string
 		name  string
-		cells []platform.DashboardCell
+		cells []platform.Cell
 	}
 	type wants struct {
 		statusCode  int
@@ -512,7 +512,7 @@ func TestService_handlePatchDashboard(t *testing.T) {
 							d := &platform.Dashboard{
 								ID:   mustParseID("020f755c3c082000"),
 								Name: "hello",
-								Cells: []platform.DashboardCell{
+								Cells: []platform.Cell{
 									{
 										X:   1,
 										Y:   2,
@@ -574,7 +574,7 @@ func TestService_handlePatchDashboard(t *testing.T) {
 							d := &platform.Dashboard{
 								ID:   mustParseID("020f755c3c082000"),
 								Name: "hello",
-								Cells: []platform.DashboardCell{
+								Cells: []platform.Cell{
 									{
 										X:   1,
 										Y:   2,
@@ -602,7 +602,7 @@ func TestService_handlePatchDashboard(t *testing.T) {
 			},
 			args: args{
 				id: "020f755c3c082000",
-				cells: []platform.DashboardCell{
+				cells: []platform.Cell{
 					{
 						X:   1,
 						Y:   2,

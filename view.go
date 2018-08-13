@@ -6,38 +6,38 @@ import (
 	"fmt"
 )
 
-// ErrCellNotFound is the error for a missing cell.
-const ErrCellNotFound = Error("cell not found")
+// ErrViewNotFound is the error for a missing View.
+const ErrViewNotFound = Error("View not found")
 
-// CellService represents a service for managing cell data.
-type CellService interface {
-	// FindCellByID returns a single cell by ID.
-	FindCellByID(ctx context.Context, id ID) (*Cell, error)
+// ViewService represents a service for managing View data.
+type ViewService interface {
+	// FindViewByID returns a single View by ID.
+	FindViewByID(ctx context.Context, id ID) (*View, error)
 
-	// FindCells returns a list of cells that match filter and the total count of matching cells.
+	// FindViews returns a list of Views that match filter and the total count of matching Views.
 	// Additional options provide pagination & sorting.
-	FindCells(ctx context.Context, filter CellFilter) ([]*Cell, int, error)
+	FindViews(ctx context.Context, filter ViewFilter) ([]*View, int, error)
 
-	// CreateCell creates a new cell and sets b.ID with the new identifier.
-	CreateCell(ctx context.Context, b *Cell) error
+	// CreateView creates a new View and sets b.ID with the new identifier.
+	CreateView(ctx context.Context, b *View) error
 
-	// UpdateCell updates a single cell with changeset.
-	// Returns the new cell state after update.
-	UpdateCell(ctx context.Context, id ID, upd CellUpdate) (*Cell, error)
+	// UpdateView updates a single View with changeset.
+	// Returns the new View state after update.
+	UpdateView(ctx context.Context, id ID, upd ViewUpdate) (*View, error)
 
-	// DeleteCell removes a cell by ID.
-	DeleteCell(ctx context.Context, id ID) error
+	// DeleteView removes a View by ID.
+	DeleteView(ctx context.Context, id ID) error
 }
 
-// CellUpdate is a struct for updating cells.
-type CellUpdate struct {
-	CellContentsUpdate
-	Visualization Visualization
+// ViewUpdate is a struct for updating Views.
+type ViewUpdate struct {
+	ViewContentsUpdate
+	Properties ViewProperties
 }
 
 // Valid validates the update struct. It expects minimal values to be set.
-func (u CellUpdate) Valid() error {
-	_, ok := u.Visualization.(EmptyVisualization)
+func (u ViewUpdate) Valid() error {
+	_, ok := u.Properties.(EmptyViewProperties)
 	if u.Name == nil && ok {
 		return fmt.Errorf("expected at least one attribute to be updated")
 	}
@@ -45,39 +45,39 @@ func (u CellUpdate) Valid() error {
 	return nil
 }
 
-// CellContentsUpdate is a struct for updating the non visualization content of a cell.
-type CellContentsUpdate struct {
+// ViewContentsUpdate is a struct for updating the non properties content of a View.
+type ViewContentsUpdate struct {
 	Name *string `json:"name"`
 }
 
-// CellFilter represents a set of filter that restrict the returned results.
-type CellFilter struct {
+// ViewFilter represents a set of filter that restrict the returned results.
+type ViewFilter struct {
 	ID *ID
 }
 
-// Cell holds positional and visual information for a cell.
-type Cell struct {
-	CellContents
-	Visualization Visualization
+// View holds positional and visual information for a View.
+type View struct {
+	ViewContents
+	Properties ViewProperties
 }
 
-type CellContents struct {
+type ViewContents struct {
 	ID   ID     `json:"id"`
 	Name string `json:"name"`
 }
 
-type Visualization interface {
-	Visualization()
+type ViewProperties interface {
+	ViewProperties()
 }
 
-// EmptyVisualization is visuaization that has no values
-type EmptyVisualization struct{}
+// EmptyViewProperties is visuaization that has no values
+type EmptyViewProperties struct{}
 
-func (v EmptyVisualization) Visualization() {}
+func (v EmptyViewProperties) ViewProperties() {}
 
-func UnmarshalVisualizationJSON(b []byte) (Visualization, error) {
+func UnmarshalViewPropertiesJSON(b []byte) (ViewProperties, error) {
 	var v struct {
-		B json.RawMessage `json:"visualization"`
+		B json.RawMessage `json:"properties"`
 	}
 
 	if err := json.Unmarshal(b, &v); err != nil {
@@ -86,7 +86,7 @@ func UnmarshalVisualizationJSON(b []byte) (Visualization, error) {
 
 	if len(v.B) == 0 {
 		// Then there wasn't any visualizaiton field, so there's no need unmarshal it
-		return EmptyVisualization{}, nil
+		return EmptyViewProperties{}, nil
 	}
 
 	var t struct {
@@ -97,16 +97,16 @@ func UnmarshalVisualizationJSON(b []byte) (Visualization, error) {
 		return nil, err
 	}
 
-	var vis Visualization
+	var vis ViewProperties
 	switch t.Type {
 	case "chronograf-v1":
-		var qv V1Visualization
+		var qv V1ViewProperties
 		if err := json.Unmarshal(v.B, &qv); err != nil {
 			return nil, err
 		}
 		vis = qv
 	case "empty":
-		var ev EmptyVisualization
+		var ev EmptyViewProperties
 		if err := json.Unmarshal(v.B, &ev); err != nil {
 			return nil, err
 		}
@@ -118,90 +118,90 @@ func UnmarshalVisualizationJSON(b []byte) (Visualization, error) {
 	return vis, nil
 }
 
-func MarshalVisualizationJSON(v Visualization) ([]byte, error) {
+func MarshalViewPropertiesJSON(v ViewProperties) ([]byte, error) {
 	var s interface{}
 	switch vis := v.(type) {
-	case V1Visualization:
+	case V1ViewProperties:
 		s = struct {
 			Type string `json:"type"`
-			V1Visualization
+			V1ViewProperties
 		}{
-			Type:            "chronograf-v1",
-			V1Visualization: vis,
+			Type:             "chronograf-v1",
+			V1ViewProperties: vis,
 		}
 	default:
 		s = struct {
 			Type string `json:"type"`
-			EmptyVisualization
+			EmptyViewProperties
 		}{
-			Type:               "empty",
-			EmptyVisualization: EmptyVisualization{},
+			Type:                "empty",
+			EmptyViewProperties: EmptyViewProperties{},
 		}
 	}
 	return json.Marshal(s)
 }
 
-func (c Cell) MarshalJSON() ([]byte, error) {
-	vis, err := MarshalVisualizationJSON(c.Visualization)
+func (c View) MarshalJSON() ([]byte, error) {
+	vis, err := MarshalViewPropertiesJSON(c.Properties)
 	if err != nil {
 		return nil, err
 	}
 
 	return json.Marshal(struct {
-		CellContents
-		Visualization json.RawMessage `json:"visualization"`
+		ViewContents
+		ViewProperties json.RawMessage `json:"properties"`
 	}{
-		CellContents:  c.CellContents,
-		Visualization: vis,
+		ViewContents:   c.ViewContents,
+		ViewProperties: vis,
 	})
 }
 
-func (c *Cell) UnmarshalJSON(b []byte) error {
-	if err := json.Unmarshal(b, &c.CellContents); err != nil {
+func (c *View) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &c.ViewContents); err != nil {
 		return err
 	}
 
-	v, err := UnmarshalVisualizationJSON(b)
+	v, err := UnmarshalViewPropertiesJSON(b)
 	if err != nil {
 		return err
 	}
-	c.Visualization = v
+	c.Properties = v
 	return nil
 }
 
-func (u *CellUpdate) UnmarshalJSON(b []byte) error {
-	if err := json.Unmarshal(b, &u.CellContentsUpdate); err != nil {
+func (u *ViewUpdate) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &u.ViewContentsUpdate); err != nil {
 		return err
 	}
 
-	v, err := UnmarshalVisualizationJSON(b)
+	v, err := UnmarshalViewPropertiesJSON(b)
 	if err != nil {
 		return err
 	}
-	u.Visualization = v
+	u.Properties = v
 	return nil
 }
-func (u CellUpdate) MarshalJSON() ([]byte, error) {
-	vis, err := MarshalVisualizationJSON(u.Visualization)
+func (u ViewUpdate) MarshalJSON() ([]byte, error) {
+	vis, err := MarshalViewPropertiesJSON(u.Properties)
 	if err != nil {
 		return nil, err
 	}
 
 	return json.Marshal(struct {
-		CellContentsUpdate
-		Visualization json.RawMessage `json:"visualization,omitempty"`
+		ViewContentsUpdate
+		ViewProperties json.RawMessage `json:"properties,omitempty"`
 	}{
-		CellContentsUpdate: u.CellContentsUpdate,
-		Visualization:      vis,
+		ViewContentsUpdate: u.ViewContentsUpdate,
+		ViewProperties:     vis,
 	})
 }
 
-type V1Visualization struct {
+type V1ViewProperties struct {
 	Queries []DashboardQuery `json:"queries"`
 	Axes    map[string]Axis  `json:"axes"`
 	// TODO: chronograf will have to use visualizationType rather than type
 	Type          string           `json:"visualizationType"`
-	CellColors    []CellColor      `json:"colors"`
+	ViewColors    []ViewColor      `json:"colors"`
 	Legend        Legend           `json:"legend"`
 	TableOptions  TableOptions     `json:"tableOptions,omitempty"`
 	FieldOptions  []RenamableField `json:"fieldOptions"`
@@ -209,7 +209,7 @@ type V1Visualization struct {
 	DecimalPlaces DecimalPlaces    `json:"decimalPlaces"`
 }
 
-func (V1Visualization) Visualization() {}
+func (V1ViewProperties) ViewProperties() {}
 
 /////////////////////////////
 // Old Chronograf Types
@@ -278,7 +278,7 @@ type DurationRange struct {
 
 // Axis represents the visible extents of a visualization
 type Axis struct {
-	Bounds       []string `json:"bounds"` // bounds are an arbitrary list of client-defined strings that specify the viewport for a cell
+	Bounds       []string `json:"bounds"` // bounds are an arbitrary list of client-defined strings that specify the viewport for a View
 	LegacyBounds [2]int64 `json:"-"`      // legacy bounds are for testing a migration from an earlier version of axis
 	Label        string   `json:"label"`  // label is a description of this Axis
 	Prefix       string   `json:"prefix"` // Prefix represents a label prefix for formatting axis values
@@ -287,9 +287,9 @@ type Axis struct {
 	Scale        string   `json:"scale"`  // Scale is the axis formatting scale. Supported: "log", "linear"
 }
 
-// CellColor represents the encoding of data into visualizations
-type CellColor struct {
-	ID    string `json:"id"`    // ID is the unique id of the cell color
+// ViewColor represents the encoding of data into visualizations
+type ViewColor struct {
+	ID    string `json:"id"`    // ID is the unique id of the View color
 	Type  string `json:"type"`  // Type is how the color is used. Accepted (min,max,threshold)
 	Hex   string `json:"hex"`   // Hex is the hex number of the color
 	Name  string `json:"name"`  // Name is the user-facing name of the hex color
@@ -302,7 +302,7 @@ type Legend struct {
 	Orientation string `json:"orientation,omitempty"`
 }
 
-// TableOptions is a type of options for a DashboardCell with type Table
+// TableOptions is a type of options for a DashboardView with type Table
 type TableOptions struct {
 	VerticalTimeAxis bool           `json:"verticalTimeAxis"`
 	SortBy           RenamableField `json:"sortBy"`
@@ -310,7 +310,7 @@ type TableOptions struct {
 	FixFirstColumn   bool           `json:"fixFirstColumn"`
 }
 
-// RenamableField is a column/row field in a DashboardCell of type Table
+// RenamableField is a column/row field in a DashboardView of type Table
 type RenamableField struct {
 	InternalName string `json:"internalName"`
 	DisplayName  string `json:"displayName"`
