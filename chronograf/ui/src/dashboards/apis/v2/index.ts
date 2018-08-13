@@ -66,6 +66,18 @@ export const deleteDashboard = async (url: string): Promise<void> => {
   }
 }
 
+export const updateDashboard = async (
+  dashboard: Dashboard
+): Promise<Dashboard> => {
+  const {data} = await AJAX({
+    method: 'PATCH',
+    url: dashboard.links.self,
+    data: dashboard,
+  })
+
+  return data
+}
+
 export const loadDashboardLinks = async (
   dashboardsLink: string,
   activeDashboard: Dashboard

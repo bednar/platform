@@ -25,6 +25,15 @@ export default (state: State = [], action: Action): State => {
 
       return newDashboards
     }
+
+    case ActionTypes.UpdateDashboard: {
+      const {dashboard} = action.payload
+      const newState = state.map(
+        d => (d.id === dashboard.id ? {...dashboard} : d)
+      )
+
+      return [...newState]
+    }
   }
   return state
 }

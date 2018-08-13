@@ -6,6 +6,7 @@ import {
   loadDashboard,
   loadDashboards,
   deleteDashboard,
+  updateDashboard,
 } from 'src/dashboards/actions/v2/'
 
 // Resources
@@ -35,6 +36,14 @@ describe('dashboards reducer', () => {
 
     const expected = [loadedDashboard, d2]
     const actual = reducer(state, loadDashboard(loadedDashboard))
+
+    expect(actual).toEqual(expected)
+  })
+
+  it('can update a dashboard', () => {
+    const updates = {...dashboard, name: 'updated dash'}
+    const expected = [updates]
+    const actual = reducer([dashboard], updateDashboard(updates))
 
     expect(actual).toEqual(expected)
   })

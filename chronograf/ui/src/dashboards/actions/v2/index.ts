@@ -9,6 +9,7 @@ import {
   getDashboards as getDashboardsAJAX,
   createDashboard as createDashboardAJAX,
   deleteDashboard as deleteDashboardAJAX,
+  updateDashboard as updateDashboardAJAX,
 } from 'src/dashboards/apis/v2'
 
 // Actions
@@ -26,12 +27,21 @@ export enum ActionTypes {
   LoadDashboard = 'LOAD_DASHBOARD',
   DeleteDashboard = 'DELETE_DASHBOARD',
   DeleteDashboardFailed = 'DELETE_DASHBOARD_FAILED',
+  UpdateDashboard = 'UPDATE_DASHBOARD',
 }
 
 export type Action =
   | LoadDashboardsAction
   | DeleteDashboardAction
   | LoadDashboardAction
+  | UpdateDashboardAction
+
+interface UpdateDashboardAction {
+  type: ActionTypes.UpdateDashboard
+  payload: {
+    dashboard: Dashboard
+  }
+}
 
 interface LoadDashboardsAction {
   type: ActionTypes.LoadDashboards
@@ -62,6 +72,13 @@ interface LoadDashboardAction {
 }
 
 // Action Creators
+
+export const updateDashboard = (
+  dashboard: Dashboard
+): UpdateDashboardAction => ({
+  type: ActionTypes.UpdateDashboard,
+  payload: {dashboard},
+})
 
 export const loadDashboards = (
   dashboards: Dashboard[]
@@ -157,4 +174,16 @@ export const getDashboardAsync = (dashboardID: string) => async (
 
   // TODO: Notify if any of the supplied query params were invalid
   dispatch(updateTimeRangeFromQueryParams(dashboardID))
+}
+
+export const updateDashboardAsync = (dashboard: Dashboard) => async (
+  dispatch: Dispatch<Action>
+): Promise<void> => {
+  try {
+    const updatedDashboard = await updateDashboardAJAX(dashboard)
+    dispatch(updateDashboard(updatedDashboard))
+  } catch (error) {
+    console.error(error)
+    dispatch(notify(copy.dashboardUpdateFailed()))
+  }
 }

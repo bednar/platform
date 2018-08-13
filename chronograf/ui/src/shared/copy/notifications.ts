@@ -427,6 +427,12 @@ export const dashboardNotFound = (dashboardID: string): Notification => ({
   message: `Dashboard ${dashboardID} could not be found`,
 })
 
+export const dashboardUpdateFailed = (): Notification => ({
+  ...defaultErrorNotification,
+  icon: 'dash-h',
+  message: 'Could not update dashboard',
+})
+
 export const dashboardDeleted = (name: string): Notification => ({
   ...defaultSuccessNotification,
   icon: 'dash-h',
