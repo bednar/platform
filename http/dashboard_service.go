@@ -81,8 +81,8 @@ func newDashboardCellResponse(dashboardID platform.ID, c *platform.Cell) dashboa
 }
 
 type dashboardCellsResponse struct {
-	Cells []dashboardCellResponse
-	Links map[string]string `json:"links"`
+	Cells []dashboardCellResponse `json:"cells"`
+	Links map[string]string       `json:"links"`
 }
 
 func newDashboardCellsResponse(dashboardID platform.ID, cs []*platform.Cell) dashboardCellsResponse {
