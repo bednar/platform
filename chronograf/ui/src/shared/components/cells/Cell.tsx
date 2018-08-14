@@ -4,8 +4,8 @@ import _ from 'lodash'
 import download from 'src/external/download.js'
 
 // Components
-import LayoutCellMenu from 'src/shared/components/LayoutCellMenu'
-import LayoutCellHeader from 'src/shared/components/LayoutCellHeader'
+import CellMenu from 'src/shared/components/cells/CellMenu'
+import CellHeader from 'src/shared/components/cells/CellHeader'
 import View from 'src/shared/components/cells/View'
 
 // Actions
@@ -39,7 +39,7 @@ export default class CellComponent extends Component<Props> {
 
     return (
       <div className="dash-graph">
-        <LayoutCellMenu
+        <CellMenu
           cell={cell}
           queries={this.queries}
           isEditable={isEditable}
@@ -49,7 +49,7 @@ export default class CellComponent extends Component<Props> {
           onEdit={this.handleSummonOverlay}
           onCSVDownload={this.handleCSVDownload}
         />
-        <LayoutCellHeader cellName="ima cell" isEditable={isEditable} />
+        <CellHeader cellName="ima cell" isEditable={isEditable} />
         <div className="dash-graph--container">{this.emptyGraph}</div>
       </div>
     )

@@ -1,23 +1,21 @@
-import React, {Component} from 'react'
-import {connect} from 'react-redux'
-import {bindActionCreators} from 'redux'
-
+// Libraries
+import React, {PureComponent} from 'react'
 import classnames from 'classnames'
 
+// Components
 import MenuTooltipButton, {
   MenuItem,
 } from 'src/shared/components/MenuTooltipButton'
 import CustomTimeIndicator from 'src/shared/components/CustomTimeIndicator'
+
+// Constants
 import {EDITING} from 'src/shared/annotations/helpers'
-import {cellSupportsAnnotations} from 'src/shared/constants/index'
-import {Cell} from 'src/types/dashboards'
+import {cellSupportsAnnotations} from 'src/shared/constants'
+
+// Types
+import {Cell} from 'src/types/v2/dashboards'
 import {QueryConfig} from 'src/types/queries'
 
-import {
-  addingAnnotation,
-  editingAnnotation,
-  dismissEditingAnnotation,
-} from 'src/shared/actions/annotations'
 import {ErrorHandling} from 'src/shared/decorators/errors'
 
 interface Query {
@@ -45,7 +43,7 @@ interface State {
 }
 
 @ErrorHandling
-class LayoutCellMenu extends Component<Props, State> {
+class CellMenu extends PureComponent<Props, State> {
   constructor(props: Props) {
     super(props)
 
@@ -135,29 +133,13 @@ class LayoutCellMenu extends Component<Props, State> {
   }
 
   private get editMenuItems(): MenuItem[] {
-    const {
-      cell,
-      dataExists,
-      onStartAddingAnnotation,
-      onStartEditingAnnotation,
-      onCSVDownload,
-    } = this.props
+    const {dataExists, onCSVDownload} = this.props
 
     return [
       {
         text: 'Configure',
         action: this.handleEditCell,
         disabled: false,
-      },
-      {
-        text: 'Add Annotation',
-        action: onStartAddingAnnotation,
-        disabled: !cellSupportsAnnotations(cell.type),
-      },
-      {
-        text: 'Edit Annotations',
-        action: onStartEditingAnnotation,
-        disabled: !cellSupportsAnnotations(cell.type),
       },
       {
         text: 'Download CSV',
@@ -195,17 +177,4 @@ class LayoutCellMenu extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = ({annotations: {mode}}) => ({
-  mode,
-})
-
-const mapDispatchToProps = dispatch => ({
-  onStartAddingAnnotation: bindActionCreators(addingAnnotation, dispatch),
-  onStartEditingAnnotation: bindActionCreators(editingAnnotation, dispatch),
-  onDismissEditingAnnotation: bindActionCreators(
-    dismissEditingAnnotation,
-    dispatch
-  ),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutCellMenu)
+export default CellMenu
