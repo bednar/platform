@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 
 	bolt "github.com/coreos/bbolt"
 	"github.com/influxdata/platform"
@@ -186,13 +187,23 @@ func (c *Client) ReplaceDashboardCells(ctx context.Context, id platform.ID, cs [
 			return err
 		}
 
+		ids := map[string]*platform.Cell{}
+		for _, cell := range d.Cells {
+			ids[cell.ID.String()] = cell
+		}
+
 		for _, cell := range cs {
 			if len(cell.ID) == 0 {
-				cell.ID = c.IDGenerator.ID()
+				return fmt.Errorf("cannot provide empty cell id")
 			}
 
-			if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
-				return err
+			cl, ok := ids[cell.ID.String()]
+			if !ok {
+				return fmt.Errorf("cannot replace cells that were not already present")
+			}
+
+			if !bytes.Equal(cl.ViewID, cell.ViewID) {
+				return fmt.Errorf("cannot update view id in replace")
 			}
 		}
 

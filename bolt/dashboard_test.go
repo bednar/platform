@@ -71,3 +71,7 @@ func TestDashboardService_RemoveDashboardCell(t *testing.T) {
 func TestDashboardService_UpdateDashboardCell(t *testing.T) {
 	platformtesting.UpdateDashboardCell(initDashboardService, t)
 }
+
+func TestDashboardService_ReplaceDashboardCells(t *testing.T) {
+	platformtesting.ReplaceDashboardCells(initDashboardService, t)
+}

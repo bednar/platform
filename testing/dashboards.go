@@ -772,3 +772,244 @@ func UpdateDashboardCell(
 		})
 	}
 }
+
+// ReplaceDashboardCells testing
+func ReplaceDashboardCells(
+	init func(DashboardFields, *testing.T) (platform.DashboardService, func()),
+	t *testing.T,
+) {
+	type args struct {
+		dashboardID platform.ID
+		cells       []*platform.Cell
+	}
+	type wants struct {
+		err        error
+		dashboards []*platform.Dashboard
+	}
+
+	tests := []struct {
+		name   string
+		fields DashboardFields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "basic replace cells",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Views: []*platform.View{
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashTwoID),
+						},
+					},
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashOneID),
+						},
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+							},
+							{
+								ID:     idFromString(t, dashOneID),
+								ViewID: idFromString(t, dashOneID),
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cells: []*platform.Cell{
+					{
+						ID:     idFromString(t, dashTwoID),
+						ViewID: idFromString(t, dashTwoID),
+						X:      10,
+					},
+					{
+						ID:     idFromString(t, dashOneID),
+						ViewID: idFromString(t, dashOneID),
+						Y:      11,
+					},
+				},
+			},
+			wants: wants{
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+								X:      10,
+							},
+							{
+								ID:     idFromString(t, dashOneID),
+								ViewID: idFromString(t, dashOneID),
+								Y:      11,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "try to add a cell that didn't previously exist",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Views: []*platform.View{
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashTwoID),
+						},
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cells: []*platform.Cell{
+					{
+						ID:     idFromString(t, dashTwoID),
+						ViewID: idFromString(t, dashTwoID),
+						X:      10,
+					},
+					{
+						ID:     idFromString(t, dashOneID),
+						ViewID: idFromString(t, dashOneID),
+						Y:      11,
+					},
+				},
+			},
+			wants: wants{
+				err: fmt.Errorf("cannot replace cells that were not already present"),
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "try to update a view during a replace",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Views: []*platform.View{
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashTwoID),
+						},
+					},
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashOneID),
+						},
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cells: []*platform.Cell{
+					{
+						ID:     idFromString(t, dashTwoID),
+						ViewID: idFromString(t, dashOneID),
+						X:      10,
+					},
+				},
+			},
+			wants: wants{
+				err: fmt.Errorf("cannot update view id in replace"),
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, done := init(tt.fields, t)
+			defer done()
+			ctx := context.TODO()
+			err := s.ReplaceDashboardCells(ctx, tt.args.dashboardID, tt.args.cells)
+			if (err != nil) != (tt.wants.err != nil) {
+				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
+			}
+
+			if err != nil && tt.wants.err != nil {
+				if err.Error() != tt.wants.err.Error() {
+					t.Fatalf("expected error messages to match '%v' got '%v'", tt.wants.err, err.Error())
+				}
+			}
+			defer s.DeleteDashboard(ctx, tt.args.dashboardID)
+
+			dashboards, _, err := s.FindDashboards(ctx, platform.DashboardFilter{})
+			if err != nil {
+				t.Fatalf("failed to retrieve dashboards: %v", err)
+			}
+			if diff := cmp.Diff(dashboards, tt.wants.dashboards, dashboardCmpOptions...); diff != "" {
+				t.Errorf("dashboards are different -got/+want\ndiff %s", diff)
+			}
+		})
+	}
+}
