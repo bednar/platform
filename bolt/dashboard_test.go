@@ -49,3 +49,15 @@ func TestDashboardService_DeleteDashboard(t *testing.T) {
 func TestDashboardService_UpdateDashboard(t *testing.T) {
 	platformtesting.UpdateDashboard(initDashboardService, t)
 }
+
+func TestDashboardService_AddDashboardCell(t *testing.T) {
+	platformtesting.AddDashboardCell(initDashboardService, t)
+}
+
+func TestDashboardService_RemoveDashboardCell(t *testing.T) {
+	platformtesting.RemoveDashboardCell(initDashboardService, t)
+}
+
+func TestDashboardService_UpdateDashboardCell(t *testing.T) {
+	platformtesting.UpdateDashboardCell(initDashboardService, t)
+}

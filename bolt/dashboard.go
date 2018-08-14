@@ -147,8 +147,87 @@ func (c *Client) findDashboards(ctx context.Context, tx *bolt.Tx, filter platfor
 func (c *Client) CreateDashboard(ctx context.Context, d *platform.Dashboard) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
 		d.ID = c.IDGenerator.ID()
+
+		for _, cell := range d.Cells {
+			cell.ID = c.IDGenerator.ID()
+		}
+
 		return c.putDashboard(ctx, tx, d)
 	})
+}
+
+// AddDashboardCell adds a cell to a dashboard and sets the cells ID.
+func (c *Client) AddDashboardCell(ctx context.Context, id platform.ID, cell *platform.Cell) error {
+	return c.db.Update(func(tx *bolt.Tx) error {
+		d, err := c.findDashboardByID(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+		cell.ID = c.IDGenerator.ID()
+
+		d.Cells = append(d.Cells, cell)
+		return c.putDashboard(ctx, tx, d)
+	})
+}
+
+// RemoveDashboardCell removes a cell from a dashboard.
+func (c *Client) RemoveDashboardCell(ctx context.Context, dashboardID, cellID platform.ID) error {
+	return c.db.Update(func(tx *bolt.Tx) error {
+		d, err := c.findDashboardByID(ctx, tx, dashboardID)
+		if err != nil {
+			return err
+		}
+
+		idx := -1
+		for i, cell := range d.Cells {
+			if bytes.Equal(cell.ID, cellID) {
+				idx = i
+				break
+			}
+		}
+		if idx == -1 {
+			return platform.ErrCellNotFound
+		}
+
+		d.Cells = append(d.Cells[:idx], d.Cells[idx+1:]...)
+		return c.putDashboard(ctx, tx, d)
+	})
+}
+
+// UpdateDashboardCell udpates a cell on a dashboard.
+func (c *Client) UpdateDashboardCell(ctx context.Context, dashboardID, cellID platform.ID, upd platform.CellUpdate) (*platform.Cell, error) {
+	var cell *platform.Cell
+	err := c.db.Update(func(tx *bolt.Tx) error {
+		d, err := c.findDashboardByID(ctx, tx, dashboardID)
+		if err != nil {
+			return err
+		}
+
+		idx := -1
+		for i, cell := range d.Cells {
+			if bytes.Equal(cell.ID, cellID) {
+				idx = i
+				break
+			}
+		}
+		if idx == -1 {
+			return platform.ErrCellNotFound
+		}
+
+		if err := upd.Apply(d.Cells[idx]); err != nil {
+			return err
+		}
+
+		cell = d.Cells[idx]
+
+		return c.putDashboard(ctx, tx, d)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cell, nil
 }
 
 // PutDashboard will put a dashboard without setting an ID.
@@ -206,12 +285,8 @@ func (c *Client) updateDashboard(ctx context.Context, tx *bolt.Tx, id platform.I
 		return nil, err
 	}
 
-	if upd.Name != nil {
-		d.Name = *upd.Name
-	}
-
-	if upd.Cells != nil {
-		d.Cells = upd.Cells
+	if err := upd.Apply(d); err != nil {
+		return nil, err
 	}
 
 	if err := c.putDashboard(ctx, tx, d); err != nil {
