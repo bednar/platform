@@ -119,6 +119,89 @@ func CreateDashboard(
 	}
 }
 
+// AddDashboardCell testing
+func AddDashboardCell(
+	init func(DashboardFields, *testing.T) (platform.DashboardService, func()),
+	t *testing.T,
+) {
+	type args struct {
+		dashboardID platform.ID
+		cell        *platform.Cell
+	}
+	type wants struct {
+		err        error
+		dashboards []*platform.Dashboard
+	}
+
+	tests := []struct {
+		name   string
+		fields DashboardFields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "basic add cell",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cell:        &platform.Cell{},
+			},
+			wants: wants{
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID: idFromString(t, dashTwoID),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, done := init(tt.fields, t)
+			defer done()
+			ctx := context.TODO()
+			err := s.AddDashboardCell(ctx, tt.args.dashboardID, tt.args.cell)
+			if (err != nil) != (tt.wants.err != nil) {
+				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
+			}
+
+			if err != nil && tt.wants.err != nil {
+				if err.Error() != tt.wants.err.Error() {
+					t.Fatalf("expected error messages to match '%v' got '%v'", tt.wants.err, err.Error())
+				}
+			}
+			defer s.DeleteDashboard(ctx, tt.args.dashboardID)
+
+			dashboards, _, err := s.FindDashboards(ctx, platform.DashboardFilter{})
+			if err != nil {
+				t.Fatalf("failed to retrieve dashboards: %v", err)
+			}
+			if diff := cmp.Diff(dashboards, tt.wants.dashboards, dashboardCmpOptions...); diff != "" {
+				t.Errorf("dashboards are different -got/+want\ndiff %s", diff)
+			}
+		})
+	}
+}
+
 // FindDashboardByID testing
 func FindDashboardByID(
 	init func(DashboardFields, *testing.T) (platform.DashboardService, func()),
@@ -471,6 +554,210 @@ func UpdateDashboard(
 
 			if diff := cmp.Diff(dashboard, tt.wants.dashboard, dashboardCmpOptions...); diff != "" {
 				t.Errorf("dashboard is different -got/+want\ndiff %s", diff)
+			}
+		})
+	}
+}
+
+// RemoveDashboardCell testing
+func RemoveDashboardCell(
+	init func(DashboardFields, *testing.T) (platform.DashboardService, func()),
+	t *testing.T,
+) {
+	type args struct {
+		dashboardID platform.ID
+		cellID      platform.ID
+	}
+	type wants struct {
+		err        error
+		dashboards []*platform.Dashboard
+	}
+
+	tests := []struct {
+		name   string
+		fields DashboardFields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "basic remove cell",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID: idFromString(t, dashTwoID),
+							},
+							{
+								ID: idFromString(t, dashOneID),
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cellID:      idFromString(t, dashTwoID),
+			},
+			wants: wants{
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID: idFromString(t, dashOneID),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, done := init(tt.fields, t)
+			defer done()
+			ctx := context.TODO()
+			err := s.RemoveDashboardCell(ctx, tt.args.dashboardID, tt.args.cellID)
+			if (err != nil) != (tt.wants.err != nil) {
+				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
+			}
+
+			if err != nil && tt.wants.err != nil {
+				if err.Error() != tt.wants.err.Error() {
+					t.Fatalf("expected error messages to match '%v' got '%v'", tt.wants.err, err.Error())
+				}
+			}
+			defer s.DeleteDashboard(ctx, tt.args.dashboardID)
+
+			dashboards, _, err := s.FindDashboards(ctx, platform.DashboardFilter{})
+			if err != nil {
+				t.Fatalf("failed to retrieve dashboards: %v", err)
+			}
+			if diff := cmp.Diff(dashboards, tt.wants.dashboards, dashboardCmpOptions...); diff != "" {
+				t.Errorf("dashboards are different -got/+want\ndiff %s", diff)
+			}
+		})
+	}
+}
+
+// UpdateDashboardCell testing
+func UpdateDashboardCell(
+	init func(DashboardFields, *testing.T) (platform.DashboardService, func()),
+	t *testing.T,
+) {
+	type args struct {
+		dashboardID platform.ID
+		cellID      platform.ID
+		x           int32
+		y           int32
+		w           int32
+		h           int32
+	}
+	type wants struct {
+		err        error
+		dashboards []*platform.Dashboard
+	}
+
+	tests := []struct {
+		name   string
+		fields DashboardFields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "basic remove cell",
+			fields: DashboardFields{
+				IDGenerator: &mock.IDGenerator{
+					IDFn: func() platform.ID {
+						return idFromString(t, dashTwoID)
+					},
+				},
+				Dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID: idFromString(t, dashTwoID),
+							},
+							{
+								ID: idFromString(t, dashOneID),
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				dashboardID: idFromString(t, dashOneID),
+				cellID:      idFromString(t, dashTwoID),
+				x:           10,
+			},
+			wants: wants{
+				dashboards: []*platform.Dashboard{
+					{
+						ID:   idFromString(t, dashOneID),
+						Name: "dashboard1",
+						Cells: []*platform.Cell{
+							{
+								ID: idFromString(t, dashTwoID),
+								X:  10,
+							},
+							{
+								ID: idFromString(t, dashOneID),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, done := init(tt.fields, t)
+			defer done()
+			ctx := context.TODO()
+			upd := platform.CellUpdate{}
+			if tt.args.x != 0 {
+				upd.X = &tt.args.x
+			}
+			if tt.args.y != 0 {
+				upd.Y = &tt.args.y
+			}
+			if tt.args.w != 0 {
+				upd.W = &tt.args.w
+			}
+			if tt.args.h != 0 {
+				upd.H = &tt.args.h
+			}
+			_, err := s.UpdateDashboardCell(ctx, tt.args.dashboardID, tt.args.cellID, upd)
+			if (err != nil) != (tt.wants.err != nil) {
+				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
+			}
+
+			if err != nil && tt.wants.err != nil {
+				if err.Error() != tt.wants.err.Error() {
+					t.Fatalf("expected error messages to match '%v' got '%v'", tt.wants.err, err.Error())
+				}
+			}
+			defer s.DeleteDashboard(ctx, tt.args.dashboardID)
+
+			dashboards, _, err := s.FindDashboards(ctx, platform.DashboardFilter{})
+			if err != nil {
+				t.Fatalf("failed to retrieve dashboards: %v", err)
+			}
+			if diff := cmp.Diff(dashboards, tt.wants.dashboards, dashboardCmpOptions...); diff != "" {
+				t.Errorf("dashboards are different -got/+want\ndiff %s", diff)
 			}
 		})
 	}
