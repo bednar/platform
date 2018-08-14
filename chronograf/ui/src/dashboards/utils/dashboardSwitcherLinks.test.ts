@@ -83,7 +83,7 @@ describe('dashboards.utils.dashboardSwitcherLinks', () => {
     }
 
     const staleLink = {
-      key: '3000',
+      key: '123',
       text: 'Stale Dashboard Name',
       to: '/dashboards/3000',
     }
@@ -103,7 +103,7 @@ describe('dashboards.utils.dashboardSwitcherLinks', () => {
       )
 
       const renamedLink = {
-        key: '3000',
+        key: '123',
         text: 'New Dashboard Name',
         to: '/dashboards/3000',
       }
