@@ -35,6 +35,7 @@ var dashboardCmpOptions = cmp.Options{
 type DashboardFields struct {
 	IDGenerator platform.IDGenerator
 	Dashboards  []*platform.Dashboard
+	Views       []*platform.View
 }
 
 // CreateDashboard testing
@@ -165,7 +166,8 @@ func AddDashboardCell(
 						Name: "dashboard1",
 						Cells: []*platform.Cell{
 							{
-								ID: idFromString(t, dashTwoID),
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
 							},
 						},
 					},
@@ -593,11 +595,19 @@ func RemoveDashboardCell(
 						Name: "dashboard1",
 						Cells: []*platform.Cell{
 							{
-								ID: idFromString(t, dashTwoID),
+								ID:     idFromString(t, dashTwoID),
+								ViewID: idFromString(t, dashTwoID),
 							},
 							{
 								ID: idFromString(t, dashOneID),
 							},
+						},
+					},
+				},
+				Views: []*platform.View{
+					{
+						ViewContents: platform.ViewContents{
+							ID: idFromString(t, dashTwoID),
 						},
 					},
 				},

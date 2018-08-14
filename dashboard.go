@@ -49,12 +49,12 @@ type Dashboard struct {
 
 // Cell holds positional information about a cell on dashboard and a reference to a cell.
 type Cell struct {
-	ID  ID     `json:"id"`
-	X   int32  `json:"x"`
-	Y   int32  `json:"y"`
-	W   int32  `json:"w"`
-	H   int32  `json:"h"`
-	Ref string `json:"ref"`
+	ID     ID    `json:"id"`
+	X      int32 `json:"x"`
+	Y      int32 `json:"y"`
+	W      int32 `json:"w"`
+	H      int32 `json:"h"`
+	ViewID ID    `json:"viewID"`
 }
 
 // DashboardFilter is a filter for dashboards.
@@ -79,11 +79,11 @@ func (u DashboardUpdate) Apply(d *Dashboard) error {
 
 // CellUpdate is the patch structure for a cell.
 type CellUpdate struct {
-	X   *int32  `json:"x"`
-	Y   *int32  `json:"y"`
-	W   *int32  `json:"w"`
-	H   *int32  `json:"h"`
-	Ref *string `json:"ref"`
+	X      *int32 `json:"x"`
+	Y      *int32 `json:"y"`
+	W      *int32 `json:"w"`
+	H      *int32 `json:"h"`
+	ViewID *ID    `json:"viewID"`
 }
 
 // Apply applies an update to a Cell.
@@ -104,8 +104,8 @@ func (u CellUpdate) Apply(c *Cell) error {
 		c.H = *u.H
 	}
 
-	if u.Ref != nil {
-		c.Ref = *u.Ref
+	if u.ViewID != nil {
+		c.ViewID = *u.ViewID
 	}
 
 	return nil

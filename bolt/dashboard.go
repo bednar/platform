@@ -150,10 +150,32 @@ func (c *Client) CreateDashboard(ctx context.Context, d *platform.Dashboard) err
 
 		for _, cell := range d.Cells {
 			cell.ID = c.IDGenerator.ID()
+
+			if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
+				return err
+			}
 		}
 
 		return c.putDashboard(ctx, tx, d)
 	})
+}
+
+func (c *Client) createViewIfNotExists(ctx context.Context, tx *bolt.Tx, cell *platform.Cell) error {
+	if len(cell.ViewID) != 0 {
+		if _, err := c.findViewByID(ctx, tx, cell.ViewID); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	view := &platform.View{}
+	if err := c.createView(ctx, tx, view); err != nil {
+		return err
+	}
+
+	cell.ViewID = view.ID
+
+	return nil
 }
 
 // AddDashboardCell adds a cell to a dashboard and sets the cells ID.
@@ -164,6 +186,9 @@ func (c *Client) AddDashboardCell(ctx context.Context, id platform.ID, cell *pla
 			return err
 		}
 		cell.ID = c.IDGenerator.ID()
+		if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
+			return err
+		}
 
 		d.Cells = append(d.Cells, cell)
 		return c.putDashboard(ctx, tx, d)
@@ -187,6 +212,10 @@ func (c *Client) RemoveDashboardCell(ctx context.Context, dashboardID, cellID pl
 		}
 		if idx == -1 {
 			return platform.ErrCellNotFound
+		}
+
+		if err := c.deleteView(ctx, tx, d.Cells[idx].ViewID); err != nil {
+			return err
 		}
 
 		d.Cells = append(d.Cells[:idx], d.Cells[idx+1:]...)

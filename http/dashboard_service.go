@@ -37,7 +37,8 @@ func NewDashboardHandler() *DashboardHandler {
 }
 
 type dashboardLinks struct {
-	Self string `json:"self"`
+	Self  string `json:"self"`
+	Cells string `json:"cells"`
 }
 
 type dashboardResponse struct {
@@ -49,7 +50,8 @@ type dashboardResponse struct {
 func newDashboardResponse(d *platform.Dashboard) dashboardResponse {
 	res := dashboardResponse{
 		Links: dashboardLinks{
-			Self: fmt.Sprintf("/v2/dashboards/%s", d.ID),
+			Self:  fmt.Sprintf("/v2/dashboards/%s", d.ID),
+			Cells: fmt.Sprintf("/v2/dashboards/%s/cells", d.ID),
 		},
 		Dashboard: *d,
 		Cells:     []dashboardCellResponse{},
@@ -72,6 +74,7 @@ func newDashboardCellResponse(dashboardID platform.ID, c *platform.Cell) dashboa
 		Cell: *c,
 		Links: map[string]string{
 			"self": fmt.Sprintf("/v2/dashboards/%s/cells/%s", dashboardID, c.ID),
+			"view": fmt.Sprintf("/v2/views/%s", c.ViewID),
 		},
 	}
 }
