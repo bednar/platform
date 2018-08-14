@@ -34,8 +34,8 @@ func NewDashboardHandler() *DashboardHandler {
 	h.HandlerFunc("POST", "/v2/dashboards/:id/cells", h.handlePostDashboardCell)
 	h.HandlerFunc("DELETE", "/v2/dashboards/:id/cells/:cellID", h.handleDeleteDashboardCell)
 	h.HandlerFunc("PATCH", "/v2/dashboards/:id/cells/:cellID", h.handlePatchDashboardCell)
-	// Follows copy pattern from S3 https://stackoverflow.com/questions/18755220/what-is-the-restful-way-to-represent-a-resource-clone-operation-in-the-url
-	h.HandlerFunc("PUT", "/v2/dashboards/:id/cells/:cellID", h.handleCopyDashboardCell)
+	// TODO(desa): this is for copying a dashboard cell. I'm not sure if there's a better way to do this.
+	h.HandlerFunc("POST", "/v2/dashboards/:id/cells/:cellID/copy", h.handleCopyDashboardCell)
 	return h
 }
 
@@ -77,6 +77,7 @@ func newDashboardCellResponse(dashboardID platform.ID, c *platform.Cell) dashboa
 		Cell: *c,
 		Links: map[string]string{
 			"self": fmt.Sprintf("/v2/dashboards/%s/cells/%s", dashboardID, c.ID),
+			"copy": fmt.Sprintf("/v2/dashboards/%s/cells/%s/copy", dashboardID, c.ID),
 			"view": fmt.Sprintf("/v2/views/%s", c.ViewID),
 		},
 	}
