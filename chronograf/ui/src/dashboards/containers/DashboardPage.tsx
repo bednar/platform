@@ -77,6 +77,7 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   gaugeColors: ColorsModels.ColorNumber[]
   lineColors: ColorsModels.ColorString[]
   addCell: typeof dashboardActions.addCellAsync
+  deleteCell: typeof dashboardActions.deleteCell
   getDashboard: typeof dashboardActions.getDashboardAsync
   setDashTimeV1: typeof dashboardActions.setDashTimeV1
   setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
@@ -87,7 +88,6 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   editCellQueryStatus: typeof dashboardActions.editCellQueryStatus
   updateDashboardCell: typeof dashboardActions.updateDashboardCell
   cloneDashboardCellAsync: typeof dashboardActions.cloneDashboardCellAsync
-  deleteDashboardCellAsync: typeof dashboardActions.deleteDashboardCellAsync
   updateQueryParams: typeof dashboardActions.updateQueryParams
 }
 
@@ -315,9 +315,9 @@ class DashboardPage extends Component<Props, State> {
     this.updateActiveDashboard()
   }
 
-  private handleDeleteDashboardCell = (cell: Cell): void => {
-    const {dashboard} = this.props
-    this.props.deleteDashboardCellAsync(dashboard, cell)
+  private handleDeleteDashboardCell = async (cell: Cell): Promise<void> => {
+    const {dashboard, deleteCell} = this.props
+    await deleteCell(dashboard, cell)
   }
 
   private handleZoomedTimeRange = (
@@ -407,12 +407,12 @@ const mdtp: Partial<Props> = {
   setDashTimeV1: dashboardActions.setDashTimeV1,
   setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
   updateDashboard: dashboardActions.updateDashboardAsync,
+  deleteCell: dashboardActions.deleteCellAsync,
   addCell: dashboardActions.addCellAsync,
   updateCells: dashboardActions.updateCellsAsync,
   editCellQueryStatus: dashboardActions.editCellQueryStatus,
   updateDashboardCell: dashboardActions.updateDashboardCell,
   cloneDashboardCellAsync: dashboardActions.cloneDashboardCellAsync,
-  deleteDashboardCellAsync: dashboardActions.deleteDashboardCellAsync,
   updateQueryParams: dashboardActions.updateQueryParams,
   handleChooseAutoRefresh: appActions.setAutoRefresh,
   handleClickPresentationButton: appActions.delayEnablePresentationMode,
