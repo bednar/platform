@@ -295,8 +295,7 @@ func (c *Client) UpdateDashboardCell(ctx context.Context, dashboardID, cellID pl
 }
 
 // CopyDashboardCell copies a cell on a dashboard.
-func (c *Client) CopyDashboardCell(ctx context.Context, dashboardID, cellID platform.ID) (*platform.Cell, error) {
-	cell := &platform.Cell{}
+func (c *Client) CopyDashboardCell(ctx context.Context, dashboardID, cellID platform.ID, cell *platform.Cell) (*platform.Cell, error) {
 	err := c.db.Update(func(tx *bolt.Tx) error {
 		d, err := c.findDashboardByID(ctx, tx, dashboardID)
 		if err != nil {
@@ -317,10 +316,6 @@ func (c *Client) CopyDashboardCell(ctx context.Context, dashboardID, cellID plat
 		cl := d.Cells[idx]
 
 		cell.ID = c.IDGenerator.ID()
-		cell.X = cl.X
-		cell.Y = cl.Y
-		cell.W = cl.W
-		cell.H = cl.H
 
 		view, err := c.copyView(ctx, tx, cl.ViewID)
 		if err != nil {

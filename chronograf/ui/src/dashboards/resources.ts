@@ -12,6 +12,7 @@ export const dashboard = {
       links: {
         self: '/v2/dashboards/1/cells/1',
         view: '/v2/dashboards/1/cells/1/views',
+        copy: '/v2/dashboards/1/cells/1/copy',
       },
     },
   ],

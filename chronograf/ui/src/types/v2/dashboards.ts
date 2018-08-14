@@ -126,6 +126,7 @@ export interface Cell {
   links: {
     self: string
     view: string
+    copy: string
   }
 }
 

@@ -13,6 +13,7 @@ import {
   updateCells as updateCellsAJAX,
   addCell as addCellAJAX,
   deleteCell as deleteCellAJAX,
+  copyCell as copyCellAJAX,
 } from 'src/dashboards/apis/v2'
 
 // Actions
@@ -23,7 +24,10 @@ import {
 } from 'src/dashboards/actions/v2/ranges'
 
 // Utils
-import {getNewDashboardCell} from 'src/dashboards/utils/cellGetters'
+import {
+  getNewDashboardCell,
+  getClonedDashboardCell,
+} from 'src/dashboards/utils/cellGetters'
 
 // Constants
 import * as copy from 'src/shared/copy/notifications'
@@ -253,6 +257,25 @@ export const deleteCellAsync = (dashboard: Dashboard, cell: Cell) => async (
     await deleteCellAJAX(cell.links.self)
     dispatch(deleteCell(dashboard, cell))
     dispatch(notify(copy.cellDeleted()))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const copyDashboardCellAsync = (
+  dashboard: Dashboard,
+  cell: Cell
+) => async (dispatch: Dispatch<Action>): Promise<void> => {
+  try {
+    const clonedCell = getClonedDashboardCell(dashboard, cell)
+    const cellFromServer = await copyCellAJAX(cell.links.copy, clonedCell)
+    const updatedDashboard = {
+      ...dashboard,
+      cells: [...dashboard.cells, cellFromServer],
+    }
+
+    dispatch(loadDashboard(updatedDashboard))
+    dispatch(notify(copy.cellAdded()))
   } catch (error) {
     console.error(error)
   }

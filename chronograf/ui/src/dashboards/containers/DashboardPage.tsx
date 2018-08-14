@@ -78,13 +78,13 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   lineColors: ColorsModels.ColorString[]
   addCell: typeof dashboardActions.addCellAsync
   deleteCell: typeof dashboardActions.deleteCell
+  copyCell: typeof dashboardActions.copyDashboardCellAsync
   getDashboard: typeof dashboardActions.getDashboardAsync
   setDashTimeV1: typeof dashboardActions.setDashTimeV1
   setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
   updateDashboard: typeof dashboardActions.updateDashboardAsync
   updateCells: typeof dashboardActions.updateCellsAsync
   putDashboard: typeof dashboardActions.putDashboard
-  addDashboardCellAsync: typeof dashboardActions.addDashboardCellAsync
   editCellQueryStatus: typeof dashboardActions.editCellQueryStatus
   updateDashboardCell: typeof dashboardActions.updateDashboardCell
   cloneDashboardCellAsync: typeof dashboardActions.cloneDashboardCellAsync
@@ -302,9 +302,9 @@ class DashboardPage extends Component<Props, State> {
     await addCell(dashboard)
   }
 
-  private handleCloneCell = (cell: DashboardsModels.Cell): void => {
-    const {dashboard} = this.props
-    this.props.cloneDashboardCellAsync(dashboard, cell)
+  private handleCloneCell = async (cell: Cell): Promise<void> => {
+    const {dashboard, copyCell} = this.props
+    await copyCell(dashboard, cell)
   }
 
   private handleRenameDashboard = async (name: string): Promise<void> => {
@@ -407,6 +407,7 @@ const mdtp: Partial<Props> = {
   setDashTimeV1: dashboardActions.setDashTimeV1,
   setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
   updateDashboard: dashboardActions.updateDashboardAsync,
+  copyCell: dashboardActions.copyDashboardCellAsync,
   deleteCell: dashboardActions.deleteCellAsync,
   addCell: dashboardActions.addCellAsync,
   updateCells: dashboardActions.updateCellsAsync,

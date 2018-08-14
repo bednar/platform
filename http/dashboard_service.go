@@ -533,6 +533,7 @@ func (h *DashboardHandler) handlePatchDashboardCell(w http.ResponseWriter, r *ht
 type copyDashboardCellRequest struct {
 	dashboardID platform.ID
 	cellID      platform.ID
+	cell        *platform.Cell
 }
 
 func decodeCopyDashboardCellRequest(ctx context.Context, r *http.Request) (*copyDashboardCellRequest, error) {
@@ -555,6 +556,11 @@ func decodeCopyDashboardCellRequest(ctx context.Context, r *http.Request) (*copy
 		return nil, err
 	}
 
+	req.cell = &platform.Cell{}
+	if err := json.NewDecoder(r.Body).Decode(req.cell); err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -567,7 +573,7 @@ func (h *DashboardHandler) handleCopyDashboardCell(w http.ResponseWriter, r *htt
 		EncodeError(ctx, err, w)
 		return
 	}
-	cell, err := h.DashboardService.CopyDashboardCell(ctx, req.dashboardID, req.cellID)
+	cell, err := h.DashboardService.CopyDashboardCell(ctx, req.dashboardID, req.cellID, req.cell)
 	if err != nil {
 		if err == platform.ErrDashboardNotFound || err == platform.ErrCellNotFound {
 			err = errors.New(err.Error(), errors.NotFound)

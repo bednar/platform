@@ -139,3 +139,18 @@ export const deleteCell = async (url: string): Promise<void> => {
     throw error
   }
 }
+
+export const copyCell = async (url: string, cell: Cell): Promise<Cell> => {
+  try {
+    const {data} = await AJAX({
+      method: 'POST',
+      url,
+      data: cell,
+    })
+
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}

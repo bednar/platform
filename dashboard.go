@@ -31,7 +31,7 @@ type DashboardService interface {
 	AddDashboardCell(ctx context.Context, id ID, c *Cell) error
 
 	// CopyDashboardCell makes a copy on a dashboard cell.
-	CopyDashboardCell(ctx context.Context, dashboardID, cellID ID) (*Cell, error)
+	CopyDashboardCell(ctx context.Context, dashboardID, cellID ID, cell *Cell) (*Cell, error)
 
 	// RemoveDashboardCell removes a dashbaord.
 	RemoveDashboardCell(ctx context.Context, dashboardID, cellID ID) error
