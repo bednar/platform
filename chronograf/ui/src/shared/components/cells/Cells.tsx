@@ -5,6 +5,7 @@ import ReactGridLayout, {WidthProvider, Layout} from 'react-grid-layout'
 
 // Components
 const Grid = WidthProvider(ReactGridLayout)
+import CellComponent from 'src/shared/components/cells/Cell'
 
 // Utils
 import {fastMap} from 'src/utils/fast'
@@ -35,7 +36,7 @@ interface State {
 }
 
 @ErrorHandling
-class GridContainer extends Component<Props & WithRouterProps, State> {
+class Cells extends Component<Props & WithRouterProps, State> {
   constructor(props) {
     super(props)
 
@@ -45,7 +46,7 @@ class GridContainer extends Component<Props & WithRouterProps, State> {
   }
 
   public render() {
-    const {cells} = this.props
+    const {cells, onDeleteCell, onCloneCell} = this.props
     const {rowHeight} = this.state
 
     return (
@@ -62,7 +63,14 @@ class GridContainer extends Component<Props & WithRouterProps, State> {
         isResizable={this.isDashboard}
       >
         {fastMap(cells, cell => (
-          <div key={cell.id}>{JSON.stringify(cell)}</div>
+          <div key={cell.id}>
+            <CellComponent
+              cell={cell}
+              isEditable={true}
+              onCloneCell={onCloneCell}
+              onDeleteCell={onDeleteCell}
+            />
+          </div>
         ))}
       </Grid>
     )
@@ -129,4 +137,4 @@ class GridContainer extends Component<Props & WithRouterProps, State> {
   }
 }
 
-export default withRouter(GridContainer)
+export default withRouter(Cells)

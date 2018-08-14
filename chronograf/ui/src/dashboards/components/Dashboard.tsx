@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react'
 import classnames from 'classnames'
 
-import Grid from 'src/shared/components/Grid'
+import Cells from 'src/shared/components/cells/Cells'
 import FancyScrollbar from 'src/shared/components/FancyScrollbar'
 import DashboardEmpty from 'src/dashboards/components/DashboardEmpty'
 
@@ -36,7 +36,7 @@ class DashboardComponent extends PureComponent<Props> {
       >
         <div className="dashboard container-fluid full-width">
           {dashboard.cells.length ? (
-            <Grid
+            <Cells
               cells={dashboard.cells}
               onCloneCell={onCloneCell}
               onDeleteCell={onDeleteCell}

@@ -4,7 +4,6 @@ import _ from 'lodash'
 
 // Components
 import WidgetCell from 'src/shared/components/WidgetCell'
-import LayoutCell from 'src/shared/components/LayoutCell'
 import RefreshingGraph from 'src/shared/components/RefreshingGraph'
 
 // Utils
@@ -50,21 +49,10 @@ class Layout extends Component<Props> {
       autoRefresh,
       manualRefresh,
       templates,
-      isEditable,
-      onCloneCell,
-      onDeleteCell,
     } = this.props
-    const {cellData} = this.state
 
     return (
-      <LayoutCell
-        cell={cell}
-        cellData={cellData}
-        templates={templates}
-        isEditable={isEditable}
-        onCloneCell={onCloneCell}
-        onDeleteCell={onDeleteCell}
-      >
+      <>
         {cell.isWidget ? (
           <WidgetCell cell={cell} timeRange={timeRange} source={source} />
         ) : (
@@ -87,7 +75,7 @@ class Layout extends Component<Props> {
             source={this.getSource(cell, source, sources, source)}
           />
         )}
-      </LayoutCell>
+      </>
     )
   }
 

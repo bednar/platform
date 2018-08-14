@@ -3,7 +3,7 @@ import React, {Component} from 'react'
 
 // Components
 import FancyScrollbar from 'src/shared/components/FancyScrollbar'
-import Grid from 'src/shared/components/Grid'
+import Cells from 'src/shared/components/cells/Cells'
 import PageHeader from 'src/reusable_ui/components/page_layout/PageHeader'
 
 // Types
@@ -30,7 +30,7 @@ class StatusPage extends Component<Props> {
         />
         <FancyScrollbar className="page-contents">
           <div className="dashboard container-fluid full-width">
-            <Grid cells={this.cells} />
+            <Cells cells={this.cells} />
           </div>
         </FancyScrollbar>
       </div>
@@ -40,18 +40,28 @@ class StatusPage extends Component<Props> {
   private get cells(): Cell[] {
     return [
       {
-        ref: 'news-feed',
+        id: 'news-feed',
+        viewID: 'news-feed',
         x: 0,
         y: 0,
         w: 8.5,
         h: 10,
+        links: {
+          self: '',
+          view: '',
+        },
       },
       {
-        ref: 'getting-started',
+        id: 'getting-started',
+        viewID: 'getting-started',
         x: 8.5,
         y: 0,
         w: 3.5,
         h: 10,
+        links: {
+          self: '',
+          view: '',
+        },
       },
     ]
   }

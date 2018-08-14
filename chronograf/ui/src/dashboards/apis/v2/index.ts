@@ -116,7 +116,7 @@ export const updateCells = async (
 ): Promise<Cell[]> => {
   try {
     const {data} = await AJAX({
-      method: 'POST',
+      method: 'PUT',
       url,
       data: cells,
     })
