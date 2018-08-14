@@ -43,8 +43,9 @@ func TestService_handleGetDashboards(t *testing.T) {
 							{
 								ID:   platform.ID("0"),
 								Name: "hello",
-								Cells: []platform.Cell{
+								Cells: []*platform.Cell{
 									{
+										ID:  platform.ID("0"),
 										X:   1,
 										Y:   2,
 										W:   3,
@@ -76,11 +77,15 @@ func TestService_handleGetDashboards(t *testing.T) {
       "name": "hello",
       "cells": [
         {
+          "id": "30",
           "x": 1,
           "y": 2,
           "w": 3,
           "h": 4,
-          "ref": "/v2/cells/12"
+          "ref": "/v2/cells/12",
+          "links": {
+            "self": "/v2/dashboards/30/cells/30"
+          }
         }
       ],
       "links": {
@@ -189,8 +194,9 @@ func TestService_handleGetDashboard(t *testing.T) {
 							return &platform.Dashboard{
 								ID:   mustParseID("020f755c3c082000"),
 								Name: "hello",
-								Cells: []platform.Cell{
+								Cells: []*platform.Cell{
 									{
+										ID:  platform.ID("0"),
 										X:   1,
 										Y:   2,
 										W:   3,
@@ -217,11 +223,15 @@ func TestService_handleGetDashboard(t *testing.T) {
   "name": "hello",
   "cells": [
     {
+      "id": "30",
       "x": 1,
       "y": 2,
       "w": 3,
       "h": 4,
-      "ref": "/v2/cells/12"
+      "ref": "/v2/cells/12",
+      "links": {
+        "self": "/v2/dashboards/020f755c3c082000/cells/30"
+      }
     }
   ],
   "links": {
@@ -287,7 +297,7 @@ func TestService_handleGetDashboard(t *testing.T) {
 	}
 }
 
-func TestService_handlePostDashboards(t *testing.T) {
+func TestService_handlePostDashboard(t *testing.T) {
 	type fields struct {
 		DashboardService platform.DashboardService
 	}
@@ -319,8 +329,9 @@ func TestService_handlePostDashboards(t *testing.T) {
 			args: args{
 				dashboard: &platform.Dashboard{
 					Name: "hello",
-					Cells: []platform.Cell{
+					Cells: []*platform.Cell{
 						{
+							ID:  platform.ID("0"),
 							X:   1,
 							Y:   2,
 							W:   3,
@@ -339,11 +350,15 @@ func TestService_handlePostDashboards(t *testing.T) {
   "name": "hello",
   "cells": [
     {
+      "id": "30",
       "x": 1,
       "y": 2,
       "w": 3,
       "h": 4,
-      "ref": "/v2/cells/12"
+      "ref": "/v2/cells/12",
+      "links": {
+        "self": "/v2/dashboards/020f755c3c082000/cells/30"
+      }
     }
   ],
   "links": {
@@ -368,7 +383,7 @@ func TestService_handlePostDashboards(t *testing.T) {
 			r := httptest.NewRequest("GET", "http://any.url", bytes.NewReader(b))
 			w := httptest.NewRecorder()
 
-			h.handlePostDashboards(w, r)
+			h.handlePostDashboard(w, r)
 
 			res := w.Result()
 			content := res.Header.Get("Content-Type")
@@ -489,7 +504,7 @@ func TestService_handlePatchDashboard(t *testing.T) {
 	type args struct {
 		id    string
 		name  string
-		cells []platform.Cell
+		cells []*platform.Cell
 	}
 	type wants struct {
 		statusCode  int
@@ -512,8 +527,9 @@ func TestService_handlePatchDashboard(t *testing.T) {
 							d := &platform.Dashboard{
 								ID:   mustParseID("020f755c3c082000"),
 								Name: "hello",
-								Cells: []platform.Cell{
+								Cells: []*platform.Cell{
 									{
+										ID:  platform.ID("0"),
 										X:   1,
 										Y:   2,
 										W:   3,
@@ -525,10 +541,6 @@ func TestService_handlePatchDashboard(t *testing.T) {
 
 							if upd.Name != nil {
 								d.Name = *upd.Name
-							}
-
-							if upd.Cells != nil {
-								d.Cells = upd.Cells
 							}
 
 							return d, nil
@@ -551,95 +563,15 @@ func TestService_handlePatchDashboard(t *testing.T) {
   "name": "example",
   "cells": [
     {
+      "id": "30",
       "x": 1,
       "y": 2,
       "w": 3,
       "h": 4,
-      "ref": "/v2/cells/12"
-    }
-  ],
-  "links": {
-    "self": "/v2/dashboards/020f755c3c082000"
-  }
-}
-`,
-			},
-		},
-		{
-			name: "update a dashboard cells",
-			fields: fields{
-				&mock.DashboardService{
-					UpdateDashboardF: func(ctx context.Context, id platform.ID, upd platform.DashboardUpdate) (*platform.Dashboard, error) {
-						if bytes.Equal(id, mustParseID("020f755c3c082000")) {
-							d := &platform.Dashboard{
-								ID:   mustParseID("020f755c3c082000"),
-								Name: "hello",
-								Cells: []platform.Cell{
-									{
-										X:   1,
-										Y:   2,
-										W:   3,
-										H:   4,
-										Ref: "/v2/cells/12",
-									},
-								},
-							}
-
-							if upd.Name != nil {
-								d.Name = *upd.Name
-							}
-
-							if upd.Cells != nil {
-								d.Cells = upd.Cells
-							}
-
-							return d, nil
-						}
-
-						return nil, fmt.Errorf("not found")
-					},
-				},
-			},
-			args: args{
-				id: "020f755c3c082000",
-				cells: []platform.Cell{
-					{
-						X:   1,
-						Y:   2,
-						W:   3,
-						H:   4,
-						Ref: "/v2/cells/12",
-					},
-					{
-						X:   2,
-						Y:   3,
-						W:   4,
-						H:   5,
-						Ref: "/v2/cells/1",
-					},
-				},
-			},
-			wants: wants{
-				statusCode:  http.StatusOK,
-				contentType: "application/json; charset=utf-8",
-				body: `
-{
-  "id": "020f755c3c082000",
-  "name": "hello",
-  "cells": [
-    {
-      "x": 1,
-      "y": 2,
-      "w": 3,
-      "h": 4,
-      "ref": "/v2/cells/12"
-    },
-    {
-      "x": 2,
-      "y": 3,
-      "w": 4,
-      "h": 5,
-      "ref": "/v2/cells/1"
+      "ref": "/v2/cells/12",
+      "links": {
+        "self": "/v2/dashboards/020f755c3c082000/cells/30"
+      }
     }
   ],
   "links": {
@@ -693,9 +625,6 @@ func TestService_handlePatchDashboard(t *testing.T) {
 			if tt.args.name != "" {
 				upd.Name = &tt.args.name
 			}
-			if tt.args.cells != nil {
-				upd.Cells = tt.args.cells
-			}
 
 			b, err := json.Marshal(upd)
 			if err != nil {
@@ -730,6 +659,319 @@ func TestService_handlePatchDashboard(t *testing.T) {
 			}
 			if eq, _ := jsonEqual(string(body), tt.wants.body); tt.wants.body != "" && !eq {
 				t.Errorf("%q. handlePatchDashboard() = \n***%v***\n,\nwant\n***%v***", tt.name, string(body), tt.wants.body)
+			}
+		})
+	}
+}
+
+func TestService_handlePostDashboardCell(t *testing.T) {
+	type fields struct {
+		DashboardService platform.DashboardService
+	}
+	type args struct {
+		id   string
+		cell *platform.Cell
+	}
+	type wants struct {
+		statusCode  int
+		contentType string
+		body        string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "create a dashboard cell",
+			fields: fields{
+				&mock.DashboardService{
+					AddDashboardCellF: func(ctx context.Context, id platform.ID, c *platform.Cell) error {
+						c.ID = mustParseID("020f755c3c082000")
+						return nil
+					},
+				},
+			},
+			args: args{
+				id: "020f755c3c082000",
+				cell: &platform.Cell{
+					X: 10,
+					Y: 11,
+				},
+			},
+			wants: wants{
+				statusCode:  http.StatusCreated,
+				contentType: "application/json; charset=utf-8",
+				body: `
+{
+  "id": "020f755c3c082000",
+  "x": 10,
+  "y": 11,
+  "w": 0,
+  "h": 0,
+  "ref": "",
+  "links": {
+    "self": "/v2/dashboards/020f755c3c082000/cells/020f755c3c082000"
+  }
+}
+`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewDashboardHandler()
+			h.DashboardService = tt.fields.DashboardService
+
+			b, err := json.Marshal(tt.args.cell)
+			if err != nil {
+				t.Fatalf("failed to unmarshal cell: %v", err)
+			}
+
+			r := httptest.NewRequest("GET", "http://any.url", bytes.NewReader(b))
+
+			r = r.WithContext(context.WithValue(
+				context.TODO(),
+				httprouter.ParamsKey,
+				httprouter.Params{
+					{
+						Key:   "id",
+						Value: tt.args.id,
+					},
+				}))
+
+			w := httptest.NewRecorder()
+
+			h.handlePostDashboardCell(w, r)
+
+			res := w.Result()
+			content := res.Header.Get("Content-Type")
+			body, _ := ioutil.ReadAll(res.Body)
+
+			if res.StatusCode != tt.wants.statusCode {
+				t.Errorf("%q. handlePostDashboardCell() = %v, want %v", tt.name, res.StatusCode, tt.wants.statusCode)
+			}
+			if tt.wants.contentType != "" && content != tt.wants.contentType {
+				t.Errorf("%q. handlePostDashboardCell() = %v, want %v", tt.name, content, tt.wants.contentType)
+			}
+			if eq, _ := jsonEqual(string(body), tt.wants.body); tt.wants.body != "" && !eq {
+				t.Errorf("%q. handlePostDashboardCell() = \n***%v***\n,\nwant\n***%v***", tt.name, string(body), tt.wants.body)
+			}
+		})
+	}
+}
+
+func TestService_handleDeleteDashboardCell(t *testing.T) {
+	type fields struct {
+		DashboardService platform.DashboardService
+	}
+	type args struct {
+		id     string
+		cellID string
+	}
+	type wants struct {
+		statusCode  int
+		contentType string
+		body        string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "remove a dashboard cell",
+			fields: fields{
+				&mock.DashboardService{
+					RemoveDashboardCellF: func(ctx context.Context, id platform.ID, cellID platform.ID) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				id:     "020f755c3c082000",
+				cellID: "020f755c3c082000",
+			},
+			wants: wants{
+				statusCode: http.StatusNoContent,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewDashboardHandler()
+			h.DashboardService = tt.fields.DashboardService
+
+			r := httptest.NewRequest("GET", "http://any.url", nil)
+
+			r = r.WithContext(context.WithValue(
+				context.TODO(),
+				httprouter.ParamsKey,
+				httprouter.Params{
+					{
+						Key:   "id",
+						Value: tt.args.id,
+					},
+					{
+						Key:   "cellID",
+						Value: tt.args.cellID,
+					},
+				}))
+
+			w := httptest.NewRecorder()
+
+			h.handleDeleteDashboardCell(w, r)
+
+			res := w.Result()
+			content := res.Header.Get("Content-Type")
+			body, _ := ioutil.ReadAll(res.Body)
+
+			if res.StatusCode != tt.wants.statusCode {
+				t.Errorf("%q. handleDeleteDashboardCell() = %v, want %v", tt.name, res.StatusCode, tt.wants.statusCode)
+			}
+			if tt.wants.contentType != "" && content != tt.wants.contentType {
+				t.Errorf("%q. handleDeleteDashboardCell() = %v, want %v", tt.name, content, tt.wants.contentType)
+			}
+			if eq, _ := jsonEqual(string(body), tt.wants.body); tt.wants.body != "" && !eq {
+				t.Errorf("%q. handleDeleteDashboardCell() = \n***%v***\n,\nwant\n***%v***", tt.name, string(body), tt.wants.body)
+			}
+		})
+	}
+}
+
+func TestService_handlePatchDashboardCell(t *testing.T) {
+	type fields struct {
+		DashboardService platform.DashboardService
+	}
+	type args struct {
+		id     string
+		cellID string
+		x      int32
+		y      int32
+		w      int32
+		h      int32
+		ref    string
+	}
+	type wants struct {
+		statusCode  int
+		contentType string
+		body        string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wants  wants
+	}{
+		{
+			name: "update a dashboard cell",
+			fields: fields{
+				&mock.DashboardService{
+					UpdateDashboardCellF: func(ctx context.Context, id, cellID platform.ID, upd platform.CellUpdate) (*platform.Cell, error) {
+						cell := &platform.Cell{
+							ID: mustParseID("020f755c3c082000"),
+						}
+
+						if err := upd.Apply(cell); err != nil {
+							return nil, err
+						}
+
+						return cell, nil
+					},
+				},
+			},
+			args: args{
+				id:     "020f755c3c082000",
+				cellID: "020f755c3c082000",
+				x:      10,
+				y:      11,
+			},
+			wants: wants{
+				statusCode:  http.StatusOK,
+				contentType: "application/json; charset=utf-8",
+				body: `
+{
+  "id": "020f755c3c082000",
+  "x": 10,
+  "y": 11,
+  "w": 0,
+  "h": 0,
+  "ref": "",
+  "links": {
+    "self": "/v2/dashboards/020f755c3c082000/cells/020f755c3c082000"
+  }
+}
+`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewDashboardHandler()
+			h.DashboardService = tt.fields.DashboardService
+
+			upd := platform.CellUpdate{}
+			if tt.args.x != 0 {
+				upd.X = &tt.args.x
+			}
+			if tt.args.y != 0 {
+				upd.Y = &tt.args.y
+			}
+			if tt.args.w != 0 {
+				upd.W = &tt.args.w
+			}
+			if tt.args.h != 0 {
+				upd.H = &tt.args.h
+			}
+			if tt.args.ref != "" {
+				upd.Ref = &tt.args.ref
+			}
+
+			b, err := json.Marshal(upd)
+			if err != nil {
+				t.Fatalf("failed to unmarshal cell: %v", err)
+			}
+
+			r := httptest.NewRequest("GET", "http://any.url", bytes.NewReader(b))
+
+			r = r.WithContext(context.WithValue(
+				context.TODO(),
+				httprouter.ParamsKey,
+				httprouter.Params{
+					{
+						Key:   "id",
+						Value: tt.args.id,
+					},
+					{
+						Key:   "cellID",
+						Value: tt.args.cellID,
+					},
+				}))
+
+			w := httptest.NewRecorder()
+
+			h.handlePatchDashboardCell(w, r)
+
+			res := w.Result()
+			content := res.Header.Get("Content-Type")
+			body, _ := ioutil.ReadAll(res.Body)
+
+			if res.StatusCode != tt.wants.statusCode {
+				t.Errorf("%q. handlePatchDashboardCell() = %v, want %v", tt.name, res.StatusCode, tt.wants.statusCode)
+			}
+			if tt.wants.contentType != "" && content != tt.wants.contentType {
+				t.Errorf("%q. handlePatchDashboardCell() = %v, want %v", tt.name, content, tt.wants.contentType)
+			}
+			if eq, _ := jsonEqual(string(body), tt.wants.body); tt.wants.body != "" && !eq {
+				t.Errorf("%q. handlePatchDashboardCell() = \n***%v***\n,\nwant\n***%v***", tt.name, string(body), tt.wants.body)
 			}
 		})
 	}
