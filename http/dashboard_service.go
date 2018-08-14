@@ -34,6 +34,8 @@ func NewDashboardHandler() *DashboardHandler {
 	h.HandlerFunc("POST", "/v2/dashboards/:id/cells", h.handlePostDashboardCell)
 	h.HandlerFunc("DELETE", "/v2/dashboards/:id/cells/:cellID", h.handleDeleteDashboardCell)
 	h.HandlerFunc("PATCH", "/v2/dashboards/:id/cells/:cellID", h.handlePatchDashboardCell)
+	// Follows copy pattern from S3 https://stackoverflow.com/questions/18755220/what-is-the-restful-way-to-represent-a-resource-clone-operation-in-the-url
+	h.HandlerFunc("PUT", "/v2/dashboards/:id/cells/:cellID", h.handleCopyDashboardCell)
 	return h
 }
 
@@ -513,6 +515,58 @@ func (h *DashboardHandler) handlePatchDashboardCell(w http.ResponseWriter, r *ht
 		return
 	}
 	cell, err := h.DashboardService.UpdateDashboardCell(ctx, req.dashboardID, req.cellID, req.upd)
+	if err != nil {
+		if err == platform.ErrDashboardNotFound || err == platform.ErrCellNotFound {
+			err = errors.New(err.Error(), errors.NotFound)
+		}
+		EncodeError(ctx, err, w)
+		return
+	}
+
+	if err := encodeResponse(ctx, w, http.StatusOK, newDashboardCellResponse(req.dashboardID, cell)); err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+}
+
+type copyDashboardCellRequest struct {
+	dashboardID platform.ID
+	cellID      platform.ID
+}
+
+func decodeCopyDashboardCellRequest(ctx context.Context, r *http.Request) (*copyDashboardCellRequest, error) {
+	req := &copyDashboardCellRequest{}
+
+	params := httprouter.ParamsFromContext(ctx)
+	id := params.ByName("id")
+	if id == "" {
+		return nil, errors.InvalidDataf("url missing id")
+	}
+	if err := req.dashboardID.DecodeFromString(id); err != nil {
+		return nil, err
+	}
+
+	cellID := params.ByName("cellID")
+	if cellID == "" {
+		return nil, errors.InvalidDataf("url missing cellID")
+	}
+	if err := req.cellID.DecodeFromString(cellID); err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// handleCopyDashboardCell copies a dashboard cell.
+func (h *DashboardHandler) handleCopyDashboardCell(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := decodeCopyDashboardCellRequest(ctx, r)
+	if err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+	cell, err := h.DashboardService.CopyDashboardCell(ctx, req.dashboardID, req.cellID)
 	if err != nil {
 		if err == platform.ErrDashboardNotFound || err == platform.ErrCellNotFound {
 			err = errors.New(err.Error(), errors.NotFound)
