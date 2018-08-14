@@ -92,7 +92,7 @@ class Cells extends Component<Props & WithRouterProps, State> {
 
     let changed = false
 
-    const newCells = cells.map<Cell[]>(cell => {
+    const newCells = cells.map(cell => {
       const l = grid.find(ly => ly.i === cell.id)
 
       if (

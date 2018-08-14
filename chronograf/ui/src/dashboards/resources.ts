@@ -7,10 +7,16 @@ export const dashboard = {
       y: 2,
       w: 3,
       h: 4,
-      ref: '/v2/cells/12',
+      id: '1',
+      viewID: '2',
+      links: {
+        self: '/v2/dashboards/1/cells/1',
+        view: '/v2/dashboards/1/cells/1/views',
+      },
     },
   ],
   links: {
     self: '/v2/dashboards/1',
+    cells: '/v2/dashboards/cells',
   },
 }

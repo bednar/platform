@@ -7,6 +7,7 @@ import {
   loadDashboards,
   deleteDashboard,
   updateDashboard,
+  deleteCell,
 } from 'src/dashboards/actions/v2/'
 
 // Resources
@@ -44,6 +45,16 @@ describe('dashboards reducer', () => {
     const updates = {...dashboard, name: 'updated dash'}
     const expected = [updates]
     const actual = reducer([dashboard], updateDashboard(updates))
+
+    expect(actual).toEqual(expected)
+  })
+
+  it('can delete a cell from a dashboard', () => {
+    const expected = [{...dashboard, cells: []}]
+    const actual = reducer(
+      [dashboard],
+      deleteCell(dashboard, dashboard.cells[0])
+    )
 
     expect(actual).toEqual(expected)
   })

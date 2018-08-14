@@ -471,7 +471,6 @@ export const deleteDashboardCellAsync = (
   try {
     await deleteDashboardCellAJAX(cell)
     dispatch(deleteDashboardCell(dashboard, cell))
-    dispatch(notify(cellDeleted(cell.name)))
   } catch (error) {
     console.error(error)
     dispatch(errorThrown(error))

@@ -12,6 +12,7 @@ import {
   updateDashboard as updateDashboardAJAX,
   updateCells as updateCellsAJAX,
   addCell as addCellAJAX,
+  deleteCell as deleteCellAJAX,
 } from 'src/dashboards/apis/v2'
 
 // Actions
@@ -33,6 +34,7 @@ export enum ActionTypes {
   DeleteDashboard = 'DELETE_DASHBOARD',
   DeleteDashboardFailed = 'DELETE_DASHBOARD_FAILED',
   UpdateDashboard = 'UPDATE_DASHBOARD',
+  DeleteCell = 'DELETE_CELL',
 }
 
 export type Action =
@@ -40,6 +42,15 @@ export type Action =
   | DeleteDashboardAction
   | LoadDashboardAction
   | UpdateDashboardAction
+  | DeleteCellAction
+
+interface DeleteCellAction {
+  type: ActionTypes.DeleteCell
+  payload: {
+    dashboard: Dashboard
+    cell: Cell
+  }
+}
 
 interface UpdateDashboardAction {
   type: ActionTypes.UpdateDashboard
@@ -111,6 +122,14 @@ export const deleteDashboardFailed = (
 ): DeleteDashboardFailedAction => ({
   type: ActionTypes.DeleteDashboardFailed,
   payload: {dashboard},
+})
+
+export const deleteCell = (
+  dashboard: Dashboard,
+  cell: Cell
+): DeleteCellAction => ({
+  type: ActionTypes.DeleteCell,
+  payload: {dashboard, cell},
 })
 
 // Thunks
@@ -222,6 +241,18 @@ export const updateCellsAsync = (dashboard: Dashboard, cells: Cell[]) => async (
     }
 
     dispatch(loadDashboard(updatedDashboard))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const deleteCellAsync = (dashboard: Dashboard, cell: Cell) => async (
+  dispatch: Dispatch<Action>
+): Promise<void> => {
+  try {
+    await deleteCellAJAX(cell.links.self)
+    dispatch(deleteCell(dashboard, cell))
+    dispatch(notify(copy.cellDeleted()))
   } catch (error) {
     console.error(error)
   }

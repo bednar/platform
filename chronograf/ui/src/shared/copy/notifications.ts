@@ -489,11 +489,11 @@ export const cellAdded = (): Notification => ({
   message: `Added new cell to dashboard.`,
 })
 
-export const cellDeleted = (name: string): Notification => ({
+export const cellDeleted = (): Notification => ({
   ...defaultDeletionNotification,
   icon: 'dash-h',
   duration: 1900,
-  message: `Deleted "${name}" from dashboard.`,
+  message: `Cell deleted from dashboard.`,
 })
 
 export const builderDisabled = (): Notification => ({

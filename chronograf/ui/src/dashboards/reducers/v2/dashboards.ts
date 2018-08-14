@@ -34,6 +34,20 @@ export default (state: State = [], action: Action): State => {
 
       return [...newState]
     }
+
+    case ActionTypes.DeleteCell: {
+      const {dashboard, cell} = action.payload
+      const newState = state.map(d => {
+        if (d.id !== dashboard.id) {
+          return {...d}
+        }
+
+        const cells = d.cells.filter(c => c.id !== cell.id)
+        return {...d, cells}
+      })
+
+      return [...newState]
+    }
   }
   return state
 }
