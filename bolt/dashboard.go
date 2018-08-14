@@ -283,6 +283,52 @@ func (c *Client) UpdateDashboardCell(ctx context.Context, dashboardID, cellID pl
 	return cell, nil
 }
 
+// CopyDashboardCell copies a cell on a dashboard.
+func (c *Client) CopyDashboardCell(ctx context.Context, dashboardID, cellID platform.ID) (*platform.Cell, error) {
+	var cell *platform.Cell
+	err := c.db.Update(func(tx *bolt.Tx) error {
+		d, err := c.findDashboardByID(ctx, tx, dashboardID)
+		if err != nil {
+			return err
+		}
+
+		idx := -1
+		for i, cell := range d.Cells {
+			if bytes.Equal(cell.ID, cellID) {
+				idx = i
+				break
+			}
+		}
+		if idx == -1 {
+			return platform.ErrCellNotFound
+		}
+
+		cl := d.Cells[idx]
+
+		cell.X = cl.X
+		cell.Y = cl.Y
+		cell.W = cl.W
+		cell.H = cl.H
+
+		view, err := c.copyView(ctx, tx, cl.ViewID)
+		if err != nil {
+			return err
+		}
+
+		cell.ViewID = view.ID
+
+		d.Cells = append(d.Cells, cell)
+
+		return c.putDashboard(ctx, tx, d)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cell, nil
+}
+
 // PutDashboard will put a dashboard without setting an ID.
 func (c *Client) PutDashboard(ctx context.Context, d *platform.Dashboard) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
