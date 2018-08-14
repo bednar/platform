@@ -130,7 +130,7 @@ func (h *PlatformHandler) ServeHTTP(w nethttp.ResponseWriter, r *nethttp.Request
 		h.TaskHandler.ServeHTTP(w, r)
 	}
 
-	if strings.HasPrefix(r.URL.Path, "/v2/cells") {
+	if strings.HasPrefix(r.URL.Path, "/v2/views") {
 		h.ViewHandler.ServeHTTP(w, r)
 		return
 	}
