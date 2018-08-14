@@ -38,6 +38,9 @@ type DashboardService interface {
 
 	// DeleteDashboard removes a dashboard by ID.
 	DeleteDashboard(ctx context.Context, id ID) error
+
+	// ReplaceDashboardCells replaces all cells in a dashboard
+	ReplaceDashboardCells(ctx context.Context, id ID, c []*Cell) error
 }
 
 // Dashboard represents all visual and query data for a dashboard

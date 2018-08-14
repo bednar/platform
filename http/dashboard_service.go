@@ -30,6 +30,7 @@ func NewDashboardHandler() *DashboardHandler {
 	h.HandlerFunc("DELETE", "/v2/dashboards/:id", h.handleDeleteDashboard)
 	h.HandlerFunc("PATCH", "/v2/dashboards/:id", h.handlePatchDashboard)
 
+	h.HandlerFunc("PUT", "/v2/dashboards/:id/cells", h.handlePutDashboardCell)
 	h.HandlerFunc("POST", "/v2/dashboards/:id/cells", h.handlePostDashboardCell)
 	h.HandlerFunc("DELETE", "/v2/dashboards/:id/cells/:cellID", h.handleDeleteDashboardCell)
 	h.HandlerFunc("PATCH", "/v2/dashboards/:id/cells/:cellID", h.handlePatchDashboardCell)
@@ -77,6 +78,26 @@ func newDashboardCellResponse(dashboardID platform.ID, c *platform.Cell) dashboa
 			"view": fmt.Sprintf("/v2/views/%s", c.ViewID),
 		},
 	}
+}
+
+type dashboardCellsResponse struct {
+	Cells []dashboardCellResponse
+	Links map[string]string `json:"links"`
+}
+
+func newDashboardCellsResponse(dashboardID platform.ID, cs []*platform.Cell) dashboardCellsResponse {
+	res := dashboardCellsResponse{
+		Cells: []dashboardCellResponse{},
+		Links: map[string]string{
+			"self": fmt.Sprintf("/v2/dashboards/%s/cells", dashboardID),
+		},
+	}
+
+	for _, cell := range cs {
+		res.Cells = append(res.Cells, newDashboardCellResponse(dashboardID, cell))
+	}
+
+	return res
 }
 
 // handleGetDashboards returns all dashboards within the store.
@@ -350,6 +371,52 @@ func (h *DashboardHandler) handlePostDashboardCell(w http.ResponseWriter, r *htt
 	}
 
 	if err := encodeResponse(ctx, w, http.StatusCreated, newDashboardCellResponse(req.dashboardID, req.cell)); err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+}
+
+type putDashboardCellRequest struct {
+	dashboardID platform.ID
+	cells       []*platform.Cell
+}
+
+func decodePutDashboardCellRequest(ctx context.Context, r *http.Request) (*putDashboardCellRequest, error) {
+	req := &putDashboardCellRequest{}
+
+	params := httprouter.ParamsFromContext(ctx)
+	id := params.ByName("id")
+	if id == "" {
+		return nil, errors.InvalidDataf("url missing id")
+	}
+	if err := req.dashboardID.DecodeFromString(id); err != nil {
+		return nil, err
+	}
+
+	req.cells = []*platform.Cell{}
+	if err := json.NewDecoder(r.Body).Decode(&req.cells); err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// handlePuttDashboardCell creates a dashboard cell.
+func (h *DashboardHandler) handlePutDashboardCell(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req, err := decodePutDashboardCellRequest(ctx, r)
+	if err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+
+	if err := h.DashboardService.ReplaceDashboardCells(ctx, req.dashboardID, req.cells); err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+
+	if err := encodeResponse(ctx, w, http.StatusCreated, newDashboardCellsResponse(req.dashboardID, req.cells)); err != nil {
 		EncodeError(ctx, err, w)
 		return
 	}

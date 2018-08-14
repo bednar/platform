@@ -178,6 +178,30 @@ func (c *Client) createViewIfNotExists(ctx context.Context, tx *bolt.Tx, cell *p
 	return nil
 }
 
+// ReplaceDashboardCells creates a platform dashboard and sets d.ID.
+func (c *Client) ReplaceDashboardCells(ctx context.Context, id platform.ID, cs []*platform.Cell) error {
+	return c.db.Update(func(tx *bolt.Tx) error {
+		d, err := c.findDashboardByID(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+
+		for _, cell := range cs {
+			if len(cell.ID) == 0 {
+				cell.ID = c.IDGenerator.ID()
+			}
+
+			if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
+				return err
+			}
+		}
+
+		d.Cells = cs
+
+		return c.putDashboard(ctx, tx, d)
+	})
+}
+
 // AddDashboardCell adds a cell to a dashboard and sets the cells ID.
 func (c *Client) AddDashboardCell(ctx context.Context, id platform.ID, cell *platform.Cell) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
