@@ -1,8 +1,7 @@
 // Types
 import {Dispatch} from 'redux'
-import {Dashboard} from 'src/types/v2'
+import {Dashboard, Cell} from 'src/types/v2'
 import {replace} from 'react-router-redux'
-import uuid from 'uuid'
 
 // APIs
 import {
@@ -11,6 +10,8 @@ import {
   createDashboard as createDashboardAJAX,
   deleteDashboard as deleteDashboardAJAX,
   updateDashboard as updateDashboardAJAX,
+  updateCells as updateCellsAJAX,
+  addCell as addCellAJAX,
 } from 'src/dashboards/apis/v2'
 
 // Actions
@@ -176,7 +177,6 @@ export const getDashboardAsync = (dashboardID: string) => async (
     return
   }
 
-  // TODO: Notify if any of the supplied query params were invalid
   dispatch(updateTimeRangeFromQueryParams(dashboardID))
 }
 
@@ -196,15 +196,32 @@ export const addCellAsync = (dashboard: Dashboard) => async (
   dispatch: Dispatch<Action>
 ): Promise<void> => {
   const cell = getNewDashboardCell(dashboard)
-  const dash = {
-    ...dashboard,
-    cells: [...dashboard.cells, {...cell, ref: uuid.v1()}],
-  }
 
   try {
-    const updatedDashboard = await updateDashboardAJAX(dash)
+    const createdCell = await addCellAJAX(dashboard.links.cells, cell)
+    const updatedDashboard = {
+      ...dashboard,
+      cells: [...dashboard.cells, createdCell],
+    }
+
     dispatch(loadDashboard(updatedDashboard))
     dispatch(notify(copy.cellAdded()))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const updateCellsAsync = (dashboard: Dashboard, cells: Cell[]) => async (
+  dispatch: Dispatch<Action>
+): Promise<void> => {
+  try {
+    const updatedCells = await updateCellsAJAX(dashboard.links.cells, cells)
+    const updatedDashboard = {
+      ...dashboard,
+      cells: updatedCells,
+    }
+
+    dispatch(loadDashboard(updatedDashboard))
   } catch (error) {
     console.error(error)
   }

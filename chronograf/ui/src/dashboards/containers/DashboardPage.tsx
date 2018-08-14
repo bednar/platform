@@ -81,6 +81,7 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   setDashTimeV1: typeof dashboardActions.setDashTimeV1
   setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
   updateDashboard: typeof dashboardActions.updateDashboardAsync
+  updateCells: typeof dashboardActions.updateCellsAsync
   putDashboard: typeof dashboardActions.putDashboard
   addDashboardCellAsync: typeof dashboardActions.addDashboardCellAsync
   editCellQueryStatus: typeof dashboardActions.editCellQueryStatus
@@ -232,7 +233,7 @@ class DashboardPage extends Component<Props, State> {
             manualRefresh={manualRefresh}
             onZoom={this.handleZoomedTimeRange}
             inPresentationMode={inPresentationMode}
-            onPositionChange={this.handleUpdatePosition}
+            onPositionChange={this.handlePositionChange}
             onDeleteCell={this.handleDeleteDashboardCell}
             onCloneCell={this.handleCloneCell}
             templatesIncludingDashTime={templatesIncludingDashTime}
@@ -291,11 +292,9 @@ class DashboardPage extends Component<Props, State> {
     })
   }
 
-  private handleUpdatePosition = (cells: Cell[]): void => {
-    const {dashboard} = this.props
-    const newDashboard = {...dashboard, cells}
-
-    this.props.updateDashboard(newDashboard)
+  private handlePositionChange = async (cells: Cell[]): Promise<void> => {
+    const {dashboard, updateCells} = this.props
+    await updateCells(dashboard, cells)
   }
 
   private handleAddCell = async (): Promise<void> => {
@@ -409,6 +408,7 @@ const mdtp: Partial<Props> = {
   setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
   updateDashboard: dashboardActions.updateDashboardAsync,
   addCell: dashboardActions.addCellAsync,
+  updateCells: dashboardActions.updateCellsAsync,
   editCellQueryStatus: dashboardActions.editCellQueryStatus,
   updateDashboardCell: dashboardActions.updateDashboardCell,
   cloneDashboardCellAsync: dashboardActions.cloneDashboardCellAsync,

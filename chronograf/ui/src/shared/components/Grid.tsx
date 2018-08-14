@@ -62,14 +62,14 @@ class GridContainer extends Component<Props & WithRouterProps, State> {
         isResizable={this.isDashboard}
       >
         {fastMap(cells, cell => (
-          <div key={cell.ref}>{JSON.stringify(cell)}</div>
+          <div key={cell.id}>{JSON.stringify(cell)}</div>
         ))}
       </Grid>
     )
   }
 
   private get cells(): Layout[] {
-    return this.props.cells.map(c => ({...c, i: c.ref}))
+    return this.props.cells.map(c => ({...c, i: c.id}))
   }
 
   private get isDashboard(): boolean {
@@ -85,7 +85,7 @@ class GridContainer extends Component<Props & WithRouterProps, State> {
     let changed = false
 
     const newCells = cells.map<Cell[]>(cell => {
-      const l = grid.find(ly => ly.i === cell.ref)
+      const l = grid.find(ly => ly.i === cell.id)
 
       if (
         cell.x !== l.x ||

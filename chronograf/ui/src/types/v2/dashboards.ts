@@ -96,6 +96,7 @@ export enum ViewType {
 
 interface DashboardLinks {
   self: string
+  cells: string
 }
 
 export interface Dashboard {
@@ -116,11 +117,16 @@ interface DashboardFileMetaSection {
 }
 
 export interface Cell {
+  id: string
+  viewID: string
   x: number
   y: number
   w: number
   h: number
-  ref: string
+  links: {
+    self: string
+    view: string
+  }
 }
 
 export type NewCell = Pick<Cell, Exclude<keyof Cell, 'ref'>>

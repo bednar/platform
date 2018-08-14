@@ -3,7 +3,7 @@ import AJAX from 'src/utils/ajax'
 
 // Types
 import {Dashboard} from 'src/types/v2'
-import {DashboardSwitcherLinks} from 'src/types/v2/dashboards'
+import {DashboardSwitcherLinks, Cell, NewCell} from 'src/types/v2/dashboards'
 
 // Utils
 import {
@@ -69,13 +69,18 @@ export const deleteDashboard = async (url: string): Promise<void> => {
 export const updateDashboard = async (
   dashboard: Dashboard
 ): Promise<Dashboard> => {
-  const {data} = await AJAX({
-    method: 'PATCH',
-    url: dashboard.links.self,
-    data: dashboard,
-  })
+  try {
+    const {data} = await AJAX({
+      method: 'PATCH',
+      url: dashboard.links.self,
+      data: dashboard,
+    })
 
-  return data
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
 
 export const loadDashboardLinks = async (
@@ -88,4 +93,37 @@ export const loadDashboardLinks = async (
   const dashboardLinks = updateDashboardLinks(links, activeDashboard)
 
   return dashboardLinks
+}
+
+export const addCell = async (url: string, cell: NewCell): Promise<Cell> => {
+  try {
+    const {data} = await AJAX({
+      method: 'POST',
+      url,
+      data: cell,
+    })
+
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+export const updateCells = async (
+  url: string,
+  cells: Cell[]
+): Promise<Cell[]> => {
+  try {
+    const {data} = await AJAX({
+      method: 'POST',
+      url,
+      data: cells,
+    })
+
+    return data.cells
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
