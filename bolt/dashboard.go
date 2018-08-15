@@ -376,9 +376,14 @@ func (c *Client) DeleteDashboard(ctx context.Context, id platform.ID) error {
 }
 
 func (c *Client) deleteDashboard(ctx context.Context, tx *bolt.Tx, id platform.ID) error {
-	_, err := c.findDashboardByID(ctx, tx, id)
+	d, err := c.findDashboardByID(ctx, tx, id)
 	if err != nil {
 		return err
+	}
+	for _, cell := range d.Cells {
+		if err := c.deleteView(ctx, tx, cell.ViewID); err != nil {
+			return err
+		}
 	}
 	return tx.Bucket(dashboardBucket).Delete([]byte(id))
 }
