@@ -70,7 +70,7 @@ type ViewProperties interface {
 	ViewProperties()
 }
 
-// EmptyViewProperties is visuaization that has no values
+// EmptyViewProperties is visualization that has no values
 type EmptyViewProperties struct{}
 
 func (v EmptyViewProperties) ViewProperties() {}
@@ -85,12 +85,12 @@ func UnmarshalViewPropertiesJSON(b []byte) (ViewProperties, error) {
 	}
 
 	if len(v.B) == 0 {
-		// Then there wasn't any visualizaiton field, so there's no need unmarshal it
+		// Then there wasn't any visualization field, so there's no need unmarshal it
 		return EmptyViewProperties{}, nil
 	}
 
 	var t struct {
-		Type string `json:"type"`
+		Shape string `json:"shape"`
 	}
 
 	if err := json.Unmarshal(v.B, &t); err != nil {
@@ -98,7 +98,7 @@ func UnmarshalViewPropertiesJSON(b []byte) (ViewProperties, error) {
 	}
 
 	var vis ViewProperties
-	switch t.Type {
+	switch t.Shape {
 	case "chronograf-v1":
 		var qv V1ViewProperties
 		if err := json.Unmarshal(v.B, &qv); err != nil {
@@ -112,7 +112,7 @@ func UnmarshalViewPropertiesJSON(b []byte) (ViewProperties, error) {
 		}
 		vis = ev
 	default:
-		return nil, fmt.Errorf("unknown type %v", t.Type)
+		return nil, fmt.Errorf("unknown type %v", t.Shape)
 	}
 
 	return vis, nil
@@ -123,18 +123,18 @@ func MarshalViewPropertiesJSON(v ViewProperties) ([]byte, error) {
 	switch vis := v.(type) {
 	case V1ViewProperties:
 		s = struct {
-			Type string `json:"type"`
+			Shape string `json:"shape"`
 			V1ViewProperties
 		}{
-			Type:             "chronograf-v1",
+			Shape:            "chronograf-v1",
 			V1ViewProperties: vis,
 		}
 	default:
 		s = struct {
-			Type string `json:"type"`
+			Shape string `json:"shape"`
 			EmptyViewProperties
 		}{
-			Type:                "empty",
+			Shape:               "empty",
 			EmptyViewProperties: EmptyViewProperties{},
 		}
 	}
@@ -197,10 +197,9 @@ func (u ViewUpdate) MarshalJSON() ([]byte, error) {
 }
 
 type V1ViewProperties struct {
-	Queries []DashboardQuery `json:"queries"`
-	Axes    map[string]Axis  `json:"axes"`
-	// TODO: chronograf will have to use visualizationType rather than type
-	Type          string           `json:"visualizationType"`
+	Queries       []DashboardQuery `json:"queries"`
+	Axes          map[string]Axis  `json:"axes"`
+	Type          string           `json:"type"`
 	ViewColors    []ViewColor      `json:"colors"`
 	Legend        Legend           `json:"legend"`
 	TableOptions  TableOptions     `json:"tableOptions,omitempty"`

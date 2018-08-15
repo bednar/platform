@@ -61,13 +61,13 @@ export interface DecimalPlaces {
 export interface View {
   id: string
   name: string
-  properties: V1Visualization | {}
+  properties: V1View
 }
 
-export interface V1Visualization {
-  type: string
+export interface V1View {
+  type: ViewType
   queries: CellQuery[]
-  visualizationType: ViewType
+  shape: ViewShape
   axes: Axes
   colors: ColorString[]
   tableOptions: TableOptions
@@ -78,6 +78,11 @@ export interface V1Visualization {
   legend: Legend
   isWidget?: boolean
   inView: boolean
+}
+
+export enum ViewShape {
+  ChronografV1 = 'chronografV1',
+  Empty = 'empty',
 }
 
 export enum ViewType {
@@ -130,7 +135,7 @@ export interface Cell {
   }
 }
 
-export type NewCell = Pick<Cell, Exclude<keyof Cell, 'ref'>>
+export type NewCell = Pick<Cell, Exclude<keyof Cell, 'id' | 'viewID' | 'links'>>
 
 export enum ThresholdType {
   Text = 'text',

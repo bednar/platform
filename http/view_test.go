@@ -77,10 +77,10 @@ func TestService_handleGetViews(t *testing.T) {
         "self": "/v2/views/30"
       },
       "properties": {
-        "type": "chronograf-v1",
+        "shape": "chronograf-v1",
         "queries": null,
         "axes": null,
-        "visualizationType": "line",
+        "type": "line",
         "colors": null,
         "legend": {},
         "tableOptions": {
@@ -108,7 +108,7 @@ func TestService_handleGetViews(t *testing.T) {
         "self": "/v2/views/32"
       },
       "properties": {
-        "type": "empty"
+        "shape": "empty"
       }
     }
   ]
@@ -223,7 +223,7 @@ func TestService_handleGetView(t *testing.T) {
     "self": "/v2/views/020f755c3c082000"
   },
   "properties": {
-    "type": "empty"
+    "shape": "empty"
   }
 }
 `,
@@ -335,7 +335,7 @@ func TestService_handlePostViews(t *testing.T) {
     "self": "/v2/views/020f755c3c082000"
   },
   "properties": {
-    "type": "chronograf-v1",
+    "shape": "chronograf-v1",
     "queries": null,
     "axes": null,
     "visualizationType": "line",
@@ -548,7 +548,7 @@ func TestService_handlePatchView(t *testing.T) {
     "self": "/v2/views/020f755c3c082000"
   },
   "properties": {
-    "type": "chronograf-v1",
+    "shape": "chronograf-v1",
     "queries": null,
     "axes": null,
     "visualizationType": "line",

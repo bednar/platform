@@ -3,7 +3,6 @@ import React, {Component} from 'react'
 
 // Components
 import FancyScrollbar from 'src/shared/components/FancyScrollbar'
-import Cells from 'src/shared/components/cells/Cells'
 import PageHeader from 'src/reusable_ui/components/page_layout/PageHeader'
 
 // Types
@@ -30,7 +29,7 @@ class StatusPage extends Component<Props> {
         />
         <FancyScrollbar className="page-contents">
           <div className="dashboard container-fluid full-width">
-            <Cells cells={this.cells} />
+            {JSON.stringify(this.cells)}
           </div>
         </FancyScrollbar>
       </div>
@@ -49,6 +48,7 @@ class StatusPage extends Component<Props> {
         links: {
           self: '',
           view: '',
+          copy: '',
         },
       },
       {
@@ -61,6 +61,7 @@ class StatusPage extends Component<Props> {
         links: {
           self: '',
           view: '',
+          copy: '',
         },
       },
     ]

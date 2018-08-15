@@ -8,7 +8,6 @@ import {queryStringConfig} from 'src/shared/middleware/queryStringConfig'
 import statusReducers from 'src/status/reducers'
 import logsReducer from 'src/logs/reducers'
 import sharedReducers from 'src/shared/reducers'
-import dashboardUI from 'src/dashboards/reducers/ui'
 import cellEditorOverlay from 'src/dashboards/reducers/cellEditorOverlay'
 import persistStateEnhancer from './persistStateEnhancer'
 import servicesReducer from 'src/shared/reducers/services'
@@ -22,7 +21,6 @@ import dashboardsReducer from 'src/dashboards/reducers/v2/dashboards'
 const rootReducer = combineReducers({
   ...statusReducers,
   ...sharedReducers,
-  dashboardUI,
   cellEditorOverlay,
   ranges: rangesReducer,
   dashboards: dashboardsReducer,

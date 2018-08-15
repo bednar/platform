@@ -9,7 +9,6 @@ import ReactResizeDetector from 'react-resize-detector'
 import D from 'src/external/dygraph'
 import DygraphLegend from 'src/shared/components/DygraphLegend'
 import StaticLegend from 'src/shared/components/StaticLegend'
-import Annotations from 'src/shared/components/Annotations'
 import Crosshair from 'src/shared/components/Crosshair'
 
 // Utils
@@ -39,7 +38,6 @@ import {ErrorHandling} from 'src/shared/decorators/errors'
 // Types
 import {
   Axes,
-  Query,
   CellType,
   TimeRange,
   DygraphData,
@@ -48,13 +46,14 @@ import {
   Constructable,
 } from 'src/types'
 import {LineColor} from 'src/types/colors'
+import {CellQuery} from 'src/types/v2/dashboards'
 
 const Dygraphs = D as Constructable<DygraphClass>
 
 interface Props {
   type: CellType
   cellID: string
-  queries: Query[]
+  queries: CellQuery[]
   timeSeries: DygraphData
   labels: string[]
   options: dygraphs.Options
@@ -251,7 +250,7 @@ class Dygraph extends Component<Props, State> {
   }
 
   public render() {
-    const {staticLegendHeight, xAxisRange} = this.state
+    const {staticLegendHeight} = this.state
     const {staticLegend, cellID} = this.props
 
     return (
@@ -262,14 +261,6 @@ class Dygraph extends Component<Props, State> {
       >
         {this.dygraph && (
           <div className="dygraph-addons">
-            {this.areAnnotationsVisible && (
-              <Annotations
-                dygraph={this.dygraph}
-                dWidth={this.dygraph.width_}
-                staticLegendHeight={staticLegendHeight}
-                xAxisRange={xAxisRange}
-              />
-            )}
             <DygraphLegend
               cellID={cellID}
               dygraph={this.dygraph}
@@ -449,10 +440,6 @@ class Dygraph extends Component<Props, State> {
       }
     }
     return coloredDygraphSeries
-  }
-
-  private get areAnnotationsVisible() {
-    return !!this.dygraph
   }
 
   private getLabel = (axis: string): string => {

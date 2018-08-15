@@ -6,36 +6,21 @@ import classnames from 'classnames'
 import MenuTooltipButton, {
   MenuItem,
 } from 'src/shared/components/MenuTooltipButton'
-import CustomTimeIndicator from 'src/shared/components/CustomTimeIndicator'
-
-// Constants
-import {EDITING} from 'src/shared/annotations/helpers'
-import {cellSupportsAnnotations} from 'src/shared/constants'
 
 // Types
-import {Cell} from 'src/types/v2/dashboards'
-import {QueryConfig} from 'src/types/queries'
+import {Cell, CellQuery} from 'src/types/v2/dashboards'
 
 import {ErrorHandling} from 'src/shared/decorators/errors'
-
-interface Query {
-  text: string
-  config: QueryConfig
-}
 
 interface Props {
   cell: Cell
   isEditable: boolean
   dataExists: boolean
-  mode: string
   onEdit: () => void
   onClone: (cell: Cell) => void
   onDelete: (cell: Cell) => void
   onCSVDownload: () => void
-  onStartAddingAnnotation: () => void
-  onStartEditingAnnotation: () => void
-  onDismissEditingAnnotation: () => void
-  queries: Query[]
+  queries: CellQuery[]
 }
 
 interface State {
@@ -53,35 +38,13 @@ class CellMenu extends PureComponent<Props, State> {
   }
 
   public render() {
-    const {queries} = this.props
-
-    return (
-      <div className={this.contextMenuClassname}>
-        <div className={this.customIndicatorsClassname}>
-          {queries && <CustomTimeIndicator queries={queries} />}
-        </div>
-        {this.renderMenu}
-      </div>
-    )
+    return <div className={this.contextMenuClassname}>{this.renderMenu}</div>
   }
 
   private get renderMenu(): JSX.Element {
-    const {isEditable, mode, cell, onDismissEditingAnnotation} = this.props
+    const {isEditable} = this.props
 
-    if (mode === EDITING && cellSupportsAnnotations(cell.type)) {
-      return (
-        <div className="dash-graph-context--buttons">
-          <div
-            className="btn btn-xs btn-success"
-            onClick={onDismissEditingAnnotation}
-          >
-            Done Editing
-          </div>
-        </div>
-      )
-    }
-
-    if (isEditable && mode !== EDITING) {
+    if (isEditable) {
       return (
         <div className="dash-graph-context--buttons">
           {this.pencilMenu}
@@ -122,13 +85,6 @@ class CellMenu extends PureComponent<Props, State> {
 
     return classnames('dash-graph-context', {
       'dash-graph-context__open': subMenuIsOpen,
-    })
-  }
-  private get customIndicatorsClassname(): string {
-    const {isEditable} = this.props
-
-    return classnames('dash-graph--custom-indicators', {
-      'dash-graph--draggable': isEditable,
     })
   }
 

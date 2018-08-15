@@ -5,7 +5,7 @@ import _ from 'lodash'
 import classnames from 'classnames'
 import uuid from 'uuid'
 
-import * as actions from 'src/dashboards/actions'
+import * as actions from 'src/dashboards/actions/v2'
 import {SeriesLegendData} from 'src/types/dygraphs'
 import DygraphLegendSort from 'src/shared/components/DygraphLegendSort'
 

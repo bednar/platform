@@ -2,7 +2,7 @@ import React, {SFC} from 'react'
 import {withRouter} from 'react-router'
 import {Location} from 'history'
 
-import groupByTimeOptions from 'src/data_explorer/data/groupByTimes'
+import groupByTimeOptions from 'src/shared/constants/groupByTimes'
 
 import Dropdown from 'src/shared/components/Dropdown'
 

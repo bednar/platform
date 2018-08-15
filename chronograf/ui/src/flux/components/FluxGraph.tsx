@@ -7,7 +7,8 @@ import Dygraph from 'src/shared/components/Dygraph'
 import {FluxTable} from 'src/types'
 import {DygraphSeries, DygraphValue} from 'src/types'
 import {DEFAULT_LINE_COLORS} from 'src/shared/constants/graphColorPalettes'
-import {setHoverTime as setHoverTimeAction} from 'src/dashboards/actions'
+
+import {setHoverTime as setHoverTimeAction} from 'src/dashboards/actions/v2'
 
 interface Props {
   data: FluxTable[]

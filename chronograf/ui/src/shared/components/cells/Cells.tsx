@@ -21,11 +21,17 @@ import {
 
 // Types
 import {Cell} from 'src/types/v2'
+import {Template, TimeRange} from 'src/types'
 
 import {ErrorHandling} from 'src/shared/decorators/errors'
 
 interface Props {
   cells: Cell[]
+  timeRange: TimeRange
+  templates: Template[]
+  autoRefresh: number
+  manualRefresh: number
+  onZoom: (range: TimeRange) => void
   onCloneCell?: (cell: Cell) => void
   onDeleteCell?: (cell: Cell) => void
   onPositionChange?: (cells: Cell[]) => void
@@ -46,7 +52,16 @@ class Cells extends Component<Props & WithRouterProps, State> {
   }
 
   public render() {
-    const {cells, onDeleteCell, onCloneCell} = this.props
+    const {
+      cells,
+      onZoom,
+      onDeleteCell,
+      onCloneCell,
+      timeRange,
+      templates,
+      autoRefresh,
+      manualRefresh,
+    } = this.props
     const {rowHeight} = this.state
 
     return (
@@ -66,7 +81,12 @@ class Cells extends Component<Props & WithRouterProps, State> {
           <div key={cell.id}>
             <CellComponent
               cell={cell}
+              onZoom={onZoom}
               isEditable={true}
+              templates={templates}
+              autoRefresh={autoRefresh}
+              manualRefresh={manualRefresh}
+              timeRange={timeRange}
               onCloneCell={onCloneCell}
               onDeleteCell={onDeleteCell}
             />

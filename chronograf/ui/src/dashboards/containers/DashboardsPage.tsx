@@ -4,7 +4,6 @@ import {InjectedRouter} from 'react-router'
 import {connect} from 'react-redux'
 import download from 'src/external/download'
 import _ from 'lodash'
-import uuid from 'uuid'
 
 // Components
 import DashboardsContents from 'src/dashboards/components/DashboardsPageContents'
@@ -21,7 +20,7 @@ import {
   importDashboardAsync,
   deleteDashboardAsync,
 } from 'src/dashboards/actions/v2'
-import {retainRangesDashTimeV1 as retainRangesDashTimeV1Action} from 'src/dashboards/actions'
+import {retainRangesDashTimeV1 as retainRangesDashTimeV1Action} from 'src/dashboards/actions/v2/ranges'
 import {notify as notifyAction} from 'src/shared/actions/notifications'
 
 import {
@@ -80,15 +79,7 @@ class DashboardsPage extends PureComponent<Props> {
     try {
       const newDashboard = {
         name: 'Name this dashboard',
-        cells: [
-          {
-            x: 0,
-            y: 0,
-            w: 4,
-            h: 4,
-            ref: uuid.v4(),
-          },
-        ],
+        cells: [],
       }
       const data = await createDashboard(links.dashboards, newDashboard)
       router.push(`/dashboards/${data.id}`)

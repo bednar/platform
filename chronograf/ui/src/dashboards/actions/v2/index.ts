@@ -1,6 +1,7 @@
 // Types
 import {Dispatch} from 'redux'
 import {Dashboard, Cell} from 'src/types/v2'
+import {TimeRange} from 'src/types'
 import {replace} from 'react-router-redux'
 
 // APIs
@@ -280,3 +281,10 @@ export const copyDashboardCellAsync = (
     console.error(error)
   }
 }
+
+// TODO: Implement these actions
+export const setHoverTime = () => ({})
+export const setActiveCell = () => ({})
+export const setDashTimeV1 = () => ({})
+export const setZoomedTimeRange = () => ({})
+export const updateQueryParams = (__: TimeRange) => ({})
