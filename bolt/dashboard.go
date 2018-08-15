@@ -152,7 +152,7 @@ func (c *Client) CreateDashboard(ctx context.Context, d *platform.Dashboard) err
 		for _, cell := range d.Cells {
 			cell.ID = c.IDGenerator.ID()
 
-			if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
+			if err := c.createViewIfNotExists(ctx, tx, cell, platform.AddDashboardCellOptions{CopyView: true}); err != nil {
 				return err
 			}
 		}
@@ -161,10 +161,18 @@ func (c *Client) CreateDashboard(ctx context.Context, d *platform.Dashboard) err
 	})
 }
 
-func (c *Client) createViewIfNotExists(ctx context.Context, tx *bolt.Tx, cell *platform.Cell) error {
+func (c *Client) createViewIfNotExists(ctx context.Context, tx *bolt.Tx, cell *platform.Cell, opts platform.AddDashboardCellOptions) error {
 	if len(cell.ViewID) != 0 {
-		if _, err := c.findViewByID(ctx, tx, cell.ViewID); err != nil {
+		v, err := c.findViewByID(ctx, tx, cell.ViewID)
+		if err != nil {
 			return err
+		}
+		if opts.CopyView {
+			view, err := c.copyView(ctx, tx, v.ID)
+			if err != nil {
+				return err
+			}
+			cell.ViewID = view.ID
 		}
 		return nil
 	}
@@ -214,14 +222,14 @@ func (c *Client) ReplaceDashboardCells(ctx context.Context, id platform.ID, cs [
 }
 
 // AddDashboardCell adds a cell to a dashboard and sets the cells ID.
-func (c *Client) AddDashboardCell(ctx context.Context, id platform.ID, cell *platform.Cell) error {
+func (c *Client) AddDashboardCell(ctx context.Context, id platform.ID, cell *platform.Cell, opts platform.AddDashboardCellOptions) error {
 	return c.db.Update(func(tx *bolt.Tx) error {
 		d, err := c.findDashboardByID(ctx, tx, id)
 		if err != nil {
 			return err
 		}
 		cell.ID = c.IDGenerator.ID()
-		if err := c.createViewIfNotExists(ctx, tx, cell); err != nil {
+		if err := c.createViewIfNotExists(ctx, tx, cell, opts); err != nil {
 			return err
 		}
 
@@ -283,48 +291,6 @@ func (c *Client) UpdateDashboardCell(ctx context.Context, dashboardID, cellID pl
 		}
 
 		cell = d.Cells[idx]
-
-		return c.putDashboard(ctx, tx, d)
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return cell, nil
-}
-
-// CopyDashboardCell copies a cell on a dashboard.
-func (c *Client) CopyDashboardCell(ctx context.Context, dashboardID, cellID platform.ID, cell *platform.Cell) (*platform.Cell, error) {
-	err := c.db.Update(func(tx *bolt.Tx) error {
-		d, err := c.findDashboardByID(ctx, tx, dashboardID)
-		if err != nil {
-			return err
-		}
-
-		idx := -1
-		for i, cell := range d.Cells {
-			if bytes.Equal(cell.ID, cellID) {
-				idx = i
-				break
-			}
-		}
-		if idx == -1 {
-			return platform.ErrCellNotFound
-		}
-
-		cl := d.Cells[idx]
-
-		cell.ID = c.IDGenerator.ID()
-
-		view, err := c.copyView(ctx, tx, cl.ViewID)
-		if err != nil {
-			return err
-		}
-
-		cell.ViewID = view.ID
-
-		d.Cells = append(d.Cells, cell)
 
 		return c.putDashboard(ctx, tx, d)
 	})

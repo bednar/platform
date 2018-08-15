@@ -28,10 +28,7 @@ type DashboardService interface {
 	UpdateDashboard(ctx context.Context, id ID, upd DashboardUpdate) (*Dashboard, error)
 
 	// AddDashboardCell adds a cell to a dashboard.
-	AddDashboardCell(ctx context.Context, id ID, c *Cell) error
-
-	// CopyDashboardCell makes a copy on a dashboard cell.
-	CopyDashboardCell(ctx context.Context, dashboardID, cellID ID, cell *Cell) (*Cell, error)
+	AddDashboardCell(ctx context.Context, id ID, c *Cell, opts AddDashboardCellOptions) error
 
 	// RemoveDashboardCell removes a dashbaord.
 	RemoveDashboardCell(ctx context.Context, dashboardID, cellID ID) error
@@ -72,6 +69,13 @@ type DashboardFilter struct {
 // DashboardUpdate is the patch structure for a dashboard.
 type DashboardUpdate struct {
 	Name *string `json:"name"`
+}
+
+// AddDashboardCellOptions are options for adding a dashboard.
+type AddDashboardCellOptions struct {
+	// if true CopyView will make a copy of the view at cell.ViewID and use it
+	// in the added cell.
+	CopyView bool
 }
 
 // Apply applies an update to a dashboard.

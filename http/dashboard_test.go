@@ -697,7 +697,7 @@ func TestService_handlePostDashboardCell(t *testing.T) {
 			name: "create a dashboard cell",
 			fields: fields{
 				&mock.DashboardService{
-					AddDashboardCellF: func(ctx context.Context, id platform.ID, c *platform.Cell) error {
+					AddDashboardCellF: func(ctx context.Context, id platform.ID, c *platform.Cell, opt platform.AddDashboardCellOptions) error {
 						c.ID = mustParseID("020f755c3c082000")
 						return nil
 					},

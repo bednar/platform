@@ -15,7 +15,7 @@ type DashboardService struct {
 	UpdateDashboardF   func(context.Context, platform.ID, platform.DashboardUpdate) (*platform.Dashboard, error)
 	DeleteDashboardF   func(context.Context, platform.ID) error
 
-	AddDashboardCellF      func(ctx context.Context, id platform.ID, c *platform.Cell) error
+	AddDashboardCellF      func(ctx context.Context, id platform.ID, c *platform.Cell, opts platform.AddDashboardCellOptions) error
 	RemoveDashboardCellF   func(ctx context.Context, dashboardID platform.ID, cellID platform.ID) error
 	UpdateDashboardCellF   func(ctx context.Context, dashbaordID platform.ID, cellID platform.ID, upd platform.CellUpdate) (*platform.Cell, error)
 	CopyDashboardCellF     func(ctx context.Context, dashbaordID platform.ID, cellID platform.ID) (*platform.Cell, error)
@@ -42,8 +42,8 @@ func (s *DashboardService) DeleteDashboard(ctx context.Context, id platform.ID) 
 	return s.DeleteDashboardF(ctx, id)
 }
 
-func (s *DashboardService) AddDashboardCell(ctx context.Context, id platform.ID, c *platform.Cell) error {
-	return s.AddDashboardCellF(ctx, id, c)
+func (s *DashboardService) AddDashboardCell(ctx context.Context, id platform.ID, c *platform.Cell, opts platform.AddDashboardCellOptions) error {
+	return s.AddDashboardCellF(ctx, id, c, opts)
 }
 
 func (s *DashboardService) ReplaceDashboardCells(ctx context.Context, id platform.ID, cs []*platform.Cell) error {

@@ -181,7 +181,7 @@ func AddDashboardCell(
 			s, done := init(tt.fields, t)
 			defer done()
 			ctx := context.TODO()
-			err := s.AddDashboardCell(ctx, tt.args.dashboardID, tt.args.cell)
+			err := s.AddDashboardCell(ctx, tt.args.dashboardID, tt.args.cell, platform.AddDashboardCellOptions{})
 			if (err != nil) != (tt.wants.err != nil) {
 				t.Fatalf("expected error '%v' got '%v'", tt.wants.err, err)
 			}

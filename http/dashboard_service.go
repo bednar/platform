@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/influxdata/platform"
 	"github.com/influxdata/platform/kit/errors"
@@ -34,8 +35,6 @@ func NewDashboardHandler() *DashboardHandler {
 	h.HandlerFunc("POST", "/v2/dashboards/:id/cells", h.handlePostDashboardCell)
 	h.HandlerFunc("DELETE", "/v2/dashboards/:id/cells/:cellID", h.handleDeleteDashboardCell)
 	h.HandlerFunc("PATCH", "/v2/dashboards/:id/cells/:cellID", h.handlePatchDashboardCell)
-	// TODO(desa): this is for copying a dashboard cell. I'm not sure if there's a better way to do this.
-	h.HandlerFunc("POST", "/v2/dashboards/:id/cells/:cellID/copy", h.handleCopyDashboardCell)
 	return h
 }
 
@@ -77,7 +76,6 @@ func newDashboardCellResponse(dashboardID platform.ID, c *platform.Cell) dashboa
 		Cell: *c,
 		Links: map[string]string{
 			"self": fmt.Sprintf("/v2/dashboards/%s/cells/%s", dashboardID, c.ID),
-			"copy": fmt.Sprintf("/v2/dashboards/%s/cells/%s/copy", dashboardID, c.ID),
 			"view": fmt.Sprintf("/v2/views/%s", c.ViewID),
 		},
 	}
@@ -334,6 +332,7 @@ func (r *patchDashboardRequest) Valid() error {
 type postDashboardCellRequest struct {
 	dashboardID platform.ID
 	cell        *platform.Cell
+	opts        platform.AddDashboardCellOptions
 }
 
 func decodePostDashboardCellRequest(ctx context.Context, r *http.Request) (*postDashboardCellRequest, error) {
@@ -353,6 +352,15 @@ func decodePostDashboardCellRequest(ctx context.Context, r *http.Request) (*post
 		return nil, err
 	}
 
+	qp := r.URL.Query()
+	if cv := qp.Get("copyView"); cv != "" {
+		copyView, err := strconv.ParseBool(cv)
+		if err != nil {
+			return nil, err
+		}
+		req.opts.CopyView = copyView
+	}
+
 	return req, nil
 }
 
@@ -365,7 +373,7 @@ func (h *DashboardHandler) handlePostDashboardCell(w http.ResponseWriter, r *htt
 		EncodeError(ctx, err, w)
 		return
 	}
-	if err := h.DashboardService.AddDashboardCell(ctx, req.dashboardID, req.cell); err != nil {
+	if err := h.DashboardService.AddDashboardCell(ctx, req.dashboardID, req.cell, req.opts); err != nil {
 		if err == platform.ErrDashboardNotFound {
 			err = errors.New(err.Error(), errors.NotFound)
 		}
@@ -516,64 +524,6 @@ func (h *DashboardHandler) handlePatchDashboardCell(w http.ResponseWriter, r *ht
 		return
 	}
 	cell, err := h.DashboardService.UpdateDashboardCell(ctx, req.dashboardID, req.cellID, req.upd)
-	if err != nil {
-		if err == platform.ErrDashboardNotFound || err == platform.ErrCellNotFound {
-			err = errors.New(err.Error(), errors.NotFound)
-		}
-		EncodeError(ctx, err, w)
-		return
-	}
-
-	if err := encodeResponse(ctx, w, http.StatusOK, newDashboardCellResponse(req.dashboardID, cell)); err != nil {
-		EncodeError(ctx, err, w)
-		return
-	}
-}
-
-type copyDashboardCellRequest struct {
-	dashboardID platform.ID
-	cellID      platform.ID
-	cell        *platform.Cell
-}
-
-func decodeCopyDashboardCellRequest(ctx context.Context, r *http.Request) (*copyDashboardCellRequest, error) {
-	req := &copyDashboardCellRequest{}
-
-	params := httprouter.ParamsFromContext(ctx)
-	id := params.ByName("id")
-	if id == "" {
-		return nil, errors.InvalidDataf("url missing id")
-	}
-	if err := req.dashboardID.DecodeFromString(id); err != nil {
-		return nil, err
-	}
-
-	cellID := params.ByName("cellID")
-	if cellID == "" {
-		return nil, errors.InvalidDataf("url missing cellID")
-	}
-	if err := req.cellID.DecodeFromString(cellID); err != nil {
-		return nil, err
-	}
-
-	req.cell = &platform.Cell{}
-	if err := json.NewDecoder(r.Body).Decode(req.cell); err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// handleCopyDashboardCell copies a dashboard cell.
-func (h *DashboardHandler) handleCopyDashboardCell(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req, err := decodeCopyDashboardCellRequest(ctx, r)
-	if err != nil {
-		EncodeError(ctx, err, w)
-		return
-	}
-	cell, err := h.DashboardService.CopyDashboardCell(ctx, req.dashboardID, req.cellID, req.cell)
 	if err != nil {
 		if err == platform.ErrDashboardNotFound || err == platform.ErrCellNotFound {
 			err = errors.New(err.Error(), errors.NotFound)
