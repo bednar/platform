@@ -87,6 +87,22 @@ func (s *FromOpSpec) Kind() query.OperationKind {
 	return FromKind
 }
 
+func (s *FromOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	bf := platform.BucketFilter{}
+	if s.Bucket != "" {
+		bf.Name = &s.Bucket
+	}
+
+	if len(s.BucketID) > 0 {
+		bf.ID = &s.BucketID
+	}
+
+	if bf.ID != nil || bf.Name != nil {
+		readBuckets = append(readBuckets, bf)
+	}
+	return readBuckets, writeBuckets
+}
+
 type FromProcedureSpec struct {
 	Database string
 	Bucket   string
