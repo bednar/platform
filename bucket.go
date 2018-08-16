@@ -60,3 +60,8 @@ type FindOptions struct {
 	SortBy     string
 	Descending bool
 }
+
+// InternalBucketID maps an org to its non-public internal bucket.
+func InternalBucketID(o *Organization) (*ID, error) {
+	return IDFromString("foo")
+}

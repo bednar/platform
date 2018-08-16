@@ -18,6 +18,7 @@ type OrgHandler struct {
 	*httprouter.Router
 
 	OrganizationService platform.OrganizationService
+	BucketService       platform.BucketService
 }
 
 // NewOrgHandler returns a new instance of OrgHandler.
@@ -48,6 +49,8 @@ func (h *OrgHandler) handlePostOrg(w http.ResponseWriter, r *http.Request) {
 		EncodeError(ctx, err, w)
 		return
 	}
+
+	// create org bucket here
 
 	if err := encodeResponse(ctx, w, http.StatusCreated, req.Org); err != nil {
 		EncodeError(ctx, err, w)
