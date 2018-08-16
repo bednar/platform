@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/influxdata/platform"
 	kerrors "github.com/influxdata/platform/kit/errors"
@@ -51,6 +53,27 @@ func (h *OrgHandler) handlePostOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create org bucket here
+	internalBucket := &platform.Bucket{
+		OrganizationID:  req.Org.ID,
+		Name:            "internal",
+		RetentionPeriod: time.Hour * 24 * 7,
+		Internal:        true,
+	}
+
+	// TODO: if this fails, revert org creation
+	if err := h.BucketService.CreateBucket(ctx, internalBucket); err != nil {
+		EncodeError(ctx, fmt.Errorf("Failed to create system bucket"), w)
+		return
+	}
+
+	upd := platform.OrganizationUpdate{
+		BucketID: &internalBucket.ID,
+	}
+
+	if _, err := h.OrganizationService.UpdateOrganization(ctx, req.Org.ID, upd); err != nil {
+		EncodeError(ctx, fmt.Errorf("Failed to set system bucket"), w)
+		return
+	}
 
 	if err := encodeResponse(ctx, w, http.StatusCreated, req.Org); err != nil {
 		EncodeError(ctx, err, w)

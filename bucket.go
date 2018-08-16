@@ -13,6 +13,7 @@ type Bucket struct {
 	Name                string        `json:"name"`
 	RetentionPolicyName string        `json:"rp,omitempty"` // This to support v1 sources
 	RetentionPeriod     time.Duration `json:"retentionPeriod"`
+	Internal            bool          `json:"-"` // Internal buckets are filtered from http requests
 }
 
 // BucketService represents a service for managing bucket data.
@@ -59,9 +60,4 @@ type FindOptions struct {
 	Offset     int
 	SortBy     string
 	Descending bool
-}
-
-// InternalBucketID maps an org to its non-public internal bucket.
-func InternalBucketID(o *Organization) (*ID, error) {
-	return IDFromString("foo")
 }
