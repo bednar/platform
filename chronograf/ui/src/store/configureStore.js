@@ -17,14 +17,16 @@ import sourceReducer from 'src/sources/reducers/sources'
 // v2 reducers
 import rangesReducer from 'src/dashboards/reducers/v2/ranges'
 import dashboardsReducer from 'src/dashboards/reducers/v2/dashboards'
+import hoverTimeReducer from 'src/dashboards/reducers/v2/hoverTime'
 
 const rootReducer = combineReducers({
   ...statusReducers,
   ...sharedReducers,
   cellEditorOverlay,
-  ranges: rangesReducer,
-  dashboards: dashboardsReducer,
   logs: logsReducer,
+  ranges: rangesReducer,
+  hoverTime: hoverTimeReducer,
+  dashboards: dashboardsReducer,
   routing: routerReducer,
   services: servicesReducer,
   script: scriptReducer,

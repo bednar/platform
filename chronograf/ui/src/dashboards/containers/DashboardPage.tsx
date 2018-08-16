@@ -11,6 +11,7 @@ import ManualRefresh from 'src/shared/components/ManualRefresh'
 
 // Actions
 import * as dashboardActions from 'src/dashboards/actions/v2'
+import * as rangesActions from 'src/dashboards/actions/v2/ranges'
 import * as appActions from 'src/shared/actions/app'
 import * as errorActions from 'src/shared/actions/errors'
 import * as notifyActions from 'src/shared/actions/notifications'
@@ -30,7 +31,7 @@ import {
   TEMP_VAR_DASHBOARD_TIME,
   TEMP_VAR_UPPER_DASHBOARD_TIME,
 } from 'src/shared/constants'
-import {defaultTimeRange} from 'src/shared/data/timeRanges'
+import {FORMAT_INFLUXQL, defaultTimeRange} from 'src/shared/data/timeRanges'
 import {EMPTY_LINKS} from 'src/dashboards/constants/dashboardHeader'
 
 // Types
@@ -86,9 +87,9 @@ interface Props extends ManualRefreshProps, WithRouterProps {
   getDashboard: typeof dashboardActions.getDashboardAsync
   updateDashboard: typeof dashboardActions.updateDashboardAsync
   updateCells: typeof dashboardActions.updateCellsAsync
-  updateQueryParams: typeof dashboardActions.updateQueryParams
-  setDashTimeV1: typeof dashboardActions.setDashTimeV1
-  setZoomedTimeRange: typeof dashboardActions.setZoomedTimeRange
+  updateQueryParams: typeof rangesActions.updateQueryParams
+  setDashTimeV1: typeof rangesActions.setDashTimeV1
+  setZoomedTimeRange: typeof rangesActions.setZoomedTimeRange
 }
 
 interface State {
@@ -280,16 +281,17 @@ class DashboardPage extends Component<Props, State> {
     return topInView && bottomInView
   }
 
-  private handleChooseTimeRange = (__: TimeRange): void => {
-    // const {dashboard, setDashTimeV1, updateQueryParams} = this.props
-    // setDashTimeV1(dashboard.id, {
-    //  ...timeRange,
-    //  format: FORMAT_INFLUXQL,
-    // })
-    // updateQueryParams({
-    //  lower: timeRange.lower,
-    //  upper: timeRange.upper,
-    // })
+  private handleChooseTimeRange = (timeRange: TimeRange): void => {
+    const {dashboard, setDashTimeV1, updateQueryParams} = this.props
+    setDashTimeV1(dashboard.id, {
+      ...timeRange,
+      format: FORMAT_INFLUXQL,
+    })
+
+    updateQueryParams({
+      lower: timeRange.lower,
+      upper: timeRange.upper,
+    })
   }
 
   private handlePositionChange = async (cells: Cell[]): Promise<void> => {
@@ -376,13 +378,12 @@ const mstp = (state, {params: {dashboardID}}) => {
     ranges.find(r => r.dashboardID === dashboardID) || defaultTimeRange
 
   const selectedCell = cell
-
   const dashboard = dashboards.find(d => d.id === dashboardID)
 
   return {
     links,
     sources,
-    zoomedTimeRange: {lower: 'now() - 15m', upper: null},
+    zoomedTimeRange: {lower: null, upper: null},
     timeRange,
     dashboard,
     autoRefresh,
@@ -407,9 +408,9 @@ const mdtp: Partial<Props> = {
   handleClickPresentationButton: appActions.delayEnablePresentationMode,
   errorThrown: errorActions.errorThrown,
   notify: notifyActions.notify,
-  setDashTimeV1: dashboardActions.setDashTimeV1,
-  setZoomedTimeRange: dashboardActions.setZoomedTimeRange,
-  updateQueryParams: dashboardActions.updateQueryParams,
+  setDashTimeV1: rangesActions.setDashTimeV1,
+  updateQueryParams: rangesActions.updateQueryParams,
+  setZoomedTimeRange: rangesActions.setZoomedTimeRange,
 }
 
 export default connect(mstp, mdtp)(

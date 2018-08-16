@@ -275,9 +275,9 @@ const mapDispatchToProps = {
   setActiveCell: actions.setActiveCell,
 }
 
-const mapStateToProps = ({dashboardUI}) => ({
+const mapStateToProps = ({dashboardUI, hoverTime}) => ({
   activeCellID: dashboardUI.activeCellID,
-  hoverTime: +dashboardUI.hoverTime,
+  hoverTime: +hoverTime,
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(DygraphLegend)

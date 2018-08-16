@@ -18,7 +18,7 @@ import {DEFAULT_TIME_FORMAT} from 'src/dashboards/constants'
 import {buildQueries} from 'src/utils/buildQueriesForLayouts'
 
 // Actions
-import {setHoverTime} from 'src/dashboards/actions/v2'
+import {setHoverTime} from 'src/dashboards/actions/v2/hoverTime'
 
 // Types
 import {TimeRange, Template, CellQuery} from 'src/types'
