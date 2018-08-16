@@ -198,60 +198,6 @@ class DashboardPage extends Component<Props, State> {
     )
   }
 
-  private get templates(): Template[] {
-    const {
-      dashboard,
-      timeRange: {lower, upper},
-      zoomedTimeRange: {lower: zoomedLower, upper: zoomedUpper},
-    } = this.props
-
-    const low = zoomedLower || lower
-    const up = zoomedUpper || upper
-
-    const lowerType = low && low.includes(':') ? 'timeStamp' : 'constant'
-    const upperType = up && up.includes(':') ? 'timeStamp' : 'constant'
-    const dashboardTime = {
-      id: 'dashtime',
-      tempVar: TEMP_VAR_DASHBOARD_TIME,
-      type: lowerType,
-      values: [
-        {
-          value: low,
-          type: lowerType,
-          selected: true,
-          localSelected: true,
-        },
-      ],
-    }
-
-    const upperDashboardTime = {
-      id: 'upperdashtime',
-      tempVar: TEMP_VAR_UPPER_DASHBOARD_TIME,
-      type: upperType,
-      values: [
-        {
-          value: up || 'now()',
-          type: upperType,
-          selected: true,
-          localSelected: true,
-        },
-      ],
-    }
-
-    let templatesIncludingDashTime
-    if (dashboard) {
-      templatesIncludingDashTime = [dashboardTime, upperDashboardTime, interval]
-    } else {
-      templatesIncludingDashTime = []
-    }
-
-    return templatesIncludingDashTime
-  }
-
-  private handleWindowResize = (): void => {
-    this.setState({windowHeight: window.innerHeight})
-  }
-
   private getDashboard = async () => {
     const {params, getDashboard} = this.props
 
@@ -310,10 +256,10 @@ class DashboardPage extends Component<Props, State> {
   }
 
   private handleRenameDashboard = async (name: string): Promise<void> => {
-    const {dashboard} = this.props
+    const {dashboard, updateDashboard} = this.props
     const renamedDashboard = {...dashboard, name}
 
-    this.props.updateDashboard(renamedDashboard)
+    await updateDashboard(renamedDashboard)
     this.updateActiveDashboard()
   }
 
@@ -352,6 +298,60 @@ class DashboardPage extends Component<Props, State> {
     } catch (error) {
       console.error(error)
     }
+  }
+
+  private get templates(): Template[] {
+    const {
+      dashboard,
+      timeRange: {lower, upper},
+      zoomedTimeRange: {lower: zoomedLower, upper: zoomedUpper},
+    } = this.props
+
+    const low = zoomedLower || lower
+    const up = zoomedUpper || upper
+
+    const lowerType = low && low.includes(':') ? 'timeStamp' : 'constant'
+    const upperType = up && up.includes(':') ? 'timeStamp' : 'constant'
+    const dashboardTime = {
+      id: 'dashtime',
+      tempVar: TEMP_VAR_DASHBOARD_TIME,
+      type: lowerType,
+      values: [
+        {
+          value: low,
+          type: lowerType,
+          selected: true,
+          localSelected: true,
+        },
+      ],
+    }
+
+    const upperDashboardTime = {
+      id: 'upperdashtime',
+      tempVar: TEMP_VAR_UPPER_DASHBOARD_TIME,
+      type: upperType,
+      values: [
+        {
+          value: up || 'now()',
+          type: upperType,
+          selected: true,
+          localSelected: true,
+        },
+      ],
+    }
+
+    let templatesIncludingDashTime
+    if (dashboard) {
+      templatesIncludingDashTime = [dashboardTime, upperDashboardTime, interval]
+    } else {
+      templatesIncludingDashTime = []
+    }
+
+    return templatesIncludingDashTime
+  }
+
+  private handleWindowResize = (): void => {
+    this.setState({windowHeight: window.innerHeight})
   }
 }
 
