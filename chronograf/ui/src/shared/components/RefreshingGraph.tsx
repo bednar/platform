@@ -209,12 +209,11 @@ class RefreshingGraph extends PureComponent<Props> {
   }
 }
 
-const mapStateToProps = ({annotations: {mode}, sources}) => {
+const mstp = ({sources}): Partial<Props> => {
   const source = sources.find(s => s.default)
   const link = source.links.query
 
   return {
-    mode,
     link,
   }
 }
@@ -223,4 +222,4 @@ const mdtp = {
   handleSetHoverTime: setHoverTime,
 }
 
-export default connect(mapStateToProps, mdtp)(RefreshingGraph)
+export default connect(mstp, mdtp)(RefreshingGraph)
