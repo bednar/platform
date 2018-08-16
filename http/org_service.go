@@ -52,7 +52,7 @@ func (h *OrgHandler) handlePostOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create org bucket here
+	// create internal org bucket
 	internalBucket := &platform.Bucket{
 		OrganizationID:  req.Org.ID,
 		Name:            "internal",
@@ -71,7 +71,7 @@ func (h *OrgHandler) handlePostOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.OrganizationService.UpdateOrganization(ctx, req.Org.ID, upd); err != nil {
-		EncodeError(ctx, fmt.Errorf("Failed to set system bucket"), w)
+		EncodeError(ctx, fmt.Errorf("Failed to update system bucket"), w)
 		return
 	}
 
