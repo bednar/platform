@@ -52,6 +52,7 @@ type BucketFilter struct {
 	Name           *string
 	OrganizationID *ID
 	Organization   *string
+	Internal       *bool
 }
 
 // FindOptions represents options passed to all find methods with multiple results.

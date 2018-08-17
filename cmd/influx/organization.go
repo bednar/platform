@@ -45,7 +45,7 @@ func init() {
 }
 
 func organizationCreateF(cmd *cobra.Command, args []string) {
-	s := &http.OrganizationService{
+	orgS := &http.OrganizationService{
 		Addr:  flags.host,
 		Token: flags.token,
 	}
@@ -54,7 +54,7 @@ func organizationCreateF(cmd *cobra.Command, args []string) {
 		Name: organizationCreateFlags.name,
 	}
 
-	if err := s.CreateOrganization(context.Background(), o); err != nil {
+	if err := orgS.CreateOrganization(context.Background(), o); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -81,7 +81,7 @@ func organizationCreateF(cmd *cobra.Command, args []string) {
 		BucketID: &bucket.ID,
 	}
 
-	if _, err := s.UpdateOrganization(context.Background(), o.ID, upd); err != nil {
+	if _, err := orgS.UpdateOrganization(context.Background(), o.ID, upd); err != nil {
 		fmt.Sprintf("Failed to update system bucket: %v\n", err)
 		return
 	}

@@ -169,6 +169,12 @@ func filterBucketsFn(filter platform.BucketFilter) func(b *platform.Bucket) bool
 		}
 	}
 
+	if filter.Internal != nil {
+		return func(b *platform.Bucket) bool {
+			return b.Internal == *filter.Internal
+		}
+	}
+
 	return func(b *platform.Bucket) bool { return true }
 }
 
