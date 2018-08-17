@@ -59,7 +59,34 @@ func organizationCreateF(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// create internal org bucket
+	b, err := createInternalBucket(o)
+	if err != nil {
+		fmt.Sprintf("Failed to create system bucket: %v\n", err)
+		os.Exit(1)
+	}
+
+	upd := platform.OrganizationUpdate{
+		BucketID: &b.ID,
+	}
+
+	if _, err := orgS.UpdateOrganization(context.Background(), o.ID, upd); err != nil {
+		fmt.Sprintf("Failed to update system bucket: %v\n", err)
+		os.Exit(1)
+	}
+
+	w := internal.NewTabWriter(os.Stdout)
+	w.WriteHeaders(
+		"ID",
+		"Name",
+	)
+	w.Write(map[string]interface{}{
+		"ID":   o.ID.String(),
+		"Name": o.Name,
+	})
+	w.Flush()
+}
+
+func createInternalBucket(o *platform.Organization) (*platform.Bucket, error) {
 	bucketS := &http.BucketService{
 		Addr:  flags.host,
 		Token: flags.token,
@@ -73,29 +100,10 @@ func organizationCreateF(cmd *cobra.Command, args []string) {
 	}
 
 	if err := bucketS.CreateBucket(context.Background(), bucket); err != nil {
-		fmt.Sprintf("Failed to create system bucket: %v\n", err)
-		return
+		return nil, err
 	}
 
-	upd := platform.OrganizationUpdate{
-		BucketID: &bucket.ID,
-	}
-
-	if _, err := orgS.UpdateOrganization(context.Background(), o.ID, upd); err != nil {
-		fmt.Sprintf("Failed to update system bucket: %v\n", err)
-		return
-	}
-
-	w := internal.NewTabWriter(os.Stdout)
-	w.WriteHeaders(
-		"ID",
-		"Name",
-	)
-	w.Write(map[string]interface{}{
-		"ID":   o.ID.String(),
-		"Name": o.Name,
-	})
-	w.Flush()
+	return bucket, nil
 }
 
 // Find Command
