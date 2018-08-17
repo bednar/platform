@@ -6,7 +6,7 @@ import "context"
 type Organization struct {
 	ID       ID     `json:"id"`
 	Name     string `json:"name"`
-	BucketID ID     `json:"-""` // internal bucket for system use
+	BucketID ID     `json:"-"` // internal bucket for system use
 }
 
 // OrganizationService represents a service for managing organization data.
