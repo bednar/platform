@@ -100,3 +100,7 @@ func RegisterOpSpec(k OperationKind, c NewOperationSpec) {
 func NumberOfOperations() int {
 	return len(kindToOp)
 }
+
+func OperationSpecNewFn(k OperationKind) NewOperationSpec {
+	return kindToOp[k]
+}
