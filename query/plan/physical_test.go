@@ -29,7 +29,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -76,7 +76,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -114,7 +114,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("last")},
@@ -143,7 +143,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.MinTime,
@@ -177,7 +177,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -235,7 +235,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -293,7 +293,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -360,7 +360,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -432,7 +432,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -486,7 +486,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -546,7 +546,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -602,7 +602,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -662,7 +662,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -718,7 +718,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -776,7 +776,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database: "mydb",
+							Bucket: "mybucket",
 						},
 						Parents:  nil,
 						Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -832,7 +832,7 @@ func TestPhysicalPlanner_Plan(t *testing.T) {
 					plan.ProcedureIDFromOperationID("from"): {
 						ID: plan.ProcedureIDFromOperationID("from"),
 						Spec: &functions.FromProcedureSpec{
-							Database:  "mydb",
+							Bucket:    "mybucket",
 							BoundsSet: true,
 							Bounds: plan.BoundsSpec{
 								Start: query.Time{
@@ -1072,7 +1072,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 			plan.ProcedureIDFromOperationID("from"): {
 				ID: plan.ProcedureIDFromOperationID("from"),
 				Spec: &functions.FromProcedureSpec{
-					Database: "mydb",
+					Bucket: "mybucket",
 				},
 				Parents: nil,
 				Children: []plan.ProcedureID{
@@ -1125,7 +1125,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 			fromID: {
 				ID: fromID,
 				Spec: &functions.FromProcedureSpec{
-					Database:  "mydb",
+					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: plan.BoundsSpec{
 						Start: query.MinTime,
@@ -1145,7 +1145,7 @@ func TestPhysicalPlanner_Plan_PushDown_Branch(t *testing.T) {
 			fromIDDup: {
 				ID: fromIDDup,
 				Spec: &functions.FromProcedureSpec{
-					Database:  "mydb",
+					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: plan.BoundsSpec{
 						Start: query.MinTime,
@@ -1183,7 +1183,7 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 			plan.ProcedureIDFromOperationID("from"): {
 				ID: plan.ProcedureIDFromOperationID("from"),
 				Spec: &functions.FromProcedureSpec{
-					Database: "mydb",
+					Bucket: "mybucket",
 				},
 				Parents:  nil,
 				Children: []plan.ProcedureID{plan.ProcedureIDFromOperationID("range")},
@@ -1254,7 +1254,7 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 			fromIDDup: {
 				ID: fromIDDup,
 				Spec: &functions.FromProcedureSpec{
-					Database:  "mydb",
+					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: plan.BoundsSpec{
 						Start: query.Time{
@@ -1279,7 +1279,7 @@ func TestPhysicalPlanner_Plan_PushDown_Mixed(t *testing.T) {
 			plan.ProcedureIDFromOperationID("from"): {
 				ID: plan.ProcedureIDFromOperationID("from"),
 				Spec: &functions.FromProcedureSpec{
-					Database:  "mydb",
+					Bucket:    "mybucket",
 					BoundsSet: true,
 					Bounds: plan.BoundsSpec{
 						Start: query.Time{

@@ -1071,16 +1071,18 @@ The tables schema will include the following columns:
 
 Additionally any tags on the series will be added as columns.
 
-Example:
-
-    from(bucket:"telegraf")
 
 From has the following properties:
 
 * `bucket` string
-    The name of the bucket to query.
-* `db` string
-    The name of the database to query.
+    Bucket is the name of the bucket to query
+* `bucketID` string
+    The string encoding of the bucketID to query.
+
+Example:
+
+    from(bucket:"telegraf/autogen")
+    from(bucketID:"0261d8287f4d6000")
 
 #### Yield
 
