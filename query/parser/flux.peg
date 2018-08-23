@@ -344,11 +344,133 @@ DateTimeLiteral
       return datetime(c.text, c.pos)
     }
 
+DurationLiteral
+  = durations:(
+        YearDuration
+      / MonthDuration
+      / WeekDuration
+      / DayDuration
+      / HourDuration
+      / MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    ) {
+      return durationLiteral(durations, c.text, c.pos)
+    }
+
+YearDuration
+  = mag:IntegerLiteral unit:YearUnits otherParts:(
+        MonthDuration
+      / WeekDuration
+      / DayDuration
+      / HourDuration
+      / MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+MonthDuration
+  = mag:IntegerLiteral unit:MonthUnits otherParts:(
+        WeekDuration
+      / DayDuration
+      / HourDuration
+      / MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )?  {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+WeekDuration
+  = mag:IntegerLiteral unit:WeekUnits otherParts:(
+        DayDuration
+      / HourDuration
+      / MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+DayDuration
+  = mag:IntegerLiteral unit:DayUnits otherParts:(
+        HourDuration
+      / MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+HourDuration
+  = mag:IntegerLiteral unit:HourUnits otherParts:(
+        MinuteDuration
+      / SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+MinuteDuration
+  = mag:IntegerLiteral unit:MinuteUnits otherParts:(
+        SecondDuration
+      / MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+SecondDuration
+  = mag:IntegerLiteral unit:SecondUnits otherParts:(
+        MilliSecondDuration
+      / MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+MilliSecondDuration
+  = mag:IntegerLiteral unit:MilliSecondUnits otherParts:(
+        MicroSecondDuration
+      / NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+MicroSecondDuration
+  = mag:IntegerLiteral unit:MicroSecondUnits otherParts:(
+      NanoSecondDuration
+    )? {
+      return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
+    }
+
+NanoSecondDuration
+  = mag:IntegerLiteral unit:NanoSecondUnits {
+      return appendSingleDurations(mag, unit, nil, c.text, c.pos)
+    }
+
 NanoSecondUnits
   = "ns"
 
 MicroSecondUnits
-  = ("us" / "µs" / "μs")
+  = ("us" / "µs" / "μs") {
+      return []byte("us"), nil
+    }
 
 MilliSecondUnits
   = "ms"
@@ -368,27 +490,11 @@ DayUnits
 WeekUnits
   = "w"
 
-DurationUnits
-  = (
-        NanoSecondUnits
-      / MicroSecondUnits
-      / MilliSecondUnits
-      / SecondUnits
-      / MinuteUnits
-      / HourUnits
-      / DayUnits
-      / WeekUnits
-    )
+MonthUnits
+  = "mo"
 
-SingleDuration
-  = mag:IntegerLiteral unit:DurationUnits {
-    return singleDuration(mag, unit, c.text, c.pos)
-  }
-
-DurationLiteral
-  = durations:SingleDuration+ {
-      return durationLiteral(durations, c.text, c.pos)
-    }
+YearUnits
+  = "y"
 
 StringLiteral
   = ( '"' DoubleStringChar* '"' ) {

@@ -1719,6 +1719,48 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 			},
 		},
 		{
+			name: "duration literal",
+			raw:  `from(bucket:"myBucket") |> range(start: -1y3mo2w1d4h1m30s1ms2µs70ns)`,
+			want: &ast.Program{
+				Body: []ast.Statement{
+					&ast.ExpressionStatement{
+						Expression: &ast.PipeExpression{
+							Argument: &ast.CallExpression{
+								Callee: &ast.Identifier{Name: "from"},
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									Properties: []*ast.Property{{Key: &ast.Identifier{Name: "bucket"},
+										Value: &ast.StringLiteral{Value: "myBucket"}}}}}},
+							Call: &ast.CallExpression{
+								Callee: &ast.Identifier{Name: "range"},
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									Properties: []*ast.Property{{
+										Key: &ast.Identifier{Name: "start"},
+										Value: &ast.UnaryExpression{
+											Operator: ast.SubtractionOperator,
+											Argument: &ast.DurationLiteral{
+												Values: []ast.Duration{
+													{Magnitude: 1, Unit: "y"},
+													{Magnitude: 3, Unit: "mo"},
+													{Magnitude: 2, Unit: "w"},
+													{Magnitude: 1, Unit: "d"},
+													{Magnitude: 4, Unit: "h"},
+													{Magnitude: 1, Unit: "m"},
+													{Magnitude: 30, Unit: "s"},
+													{Magnitude: 1, Unit: "ms"},
+													{Magnitude: 2, Unit: "us"},
+													{Magnitude: 70, Unit: "ns"},
+												},
+											},
+										},
+									}},
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name:    "parse error extra gibberish",
 			raw:     `from(db:"Flux") &^*&H#IUJBN`,
 			wantErr: true,
@@ -1726,6 +1768,21 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 		{
 			name:    "parse error extra gibberish and valid content",
 			raw:     `from(db:"Flux") &^*&H#IUJBN from(db:"other")`,
+			wantErr: true,
+		},
+		{
+			name:    "parse error from duration literal with repeated units",
+			raw:     `from(bucket:"my_bucket") |> range(start: -1d3h2h1m)`,
+			wantErr: true,
+		},
+		{
+			name:    "parser error from duration literal with smaller unit before larger one",
+			raw:     `from(bucket:"my_bucket") |> range(start: -1s5m)`,
+			wantErr: true,
+		},
+		{
+			name:    "parser error from duration literal with invalid unit",
+			raw:     `from(bucket:"my_bucket") |> range(start: -1s5v)`,
 			wantErr: true,
 		},
 	}
