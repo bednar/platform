@@ -16,7 +16,6 @@ import (
 const NatsServerID = "nats"
 const NatsClientID = "nats-client"
 
-// probably store a conn to streaming server here
 type WriteHandler struct {
 	*httprouter.Router
 
@@ -29,7 +28,6 @@ type WriteHandler struct {
 	Publish func(io.Reader) error
 }
 
-// instantiate NAT streaming server here?
 func NewWriteHandler(publishFn func(io.Reader) error) *WriteHandler {
 	h := &WriteHandler{
 		Router:  httprouter.New(),
@@ -41,7 +39,6 @@ func NewWriteHandler(publishFn func(io.Reader) error) *WriteHandler {
 	return h
 }
 
-// write to NATS stream here
 func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	defer r.Body.Close()
