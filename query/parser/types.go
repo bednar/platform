@@ -370,10 +370,10 @@ func appendSingleDurations(mag, unit, otherParts interface{}, text []byte, pos p
 		slice := make([]*singleDurationLiteral, 1, 10)
 		slice[0] = sdl
 		return slice, nil
-	} else {
-		others := otherParts.([]*singleDurationLiteral)
-		return append(others, sdl), nil
 	}
+
+	others := otherParts.([]*singleDurationLiteral)
+	return append(others, sdl), nil
 }
 
 func datetime(text []byte, pos position) (*ast.DateTimeLiteral, error) {
