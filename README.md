@@ -1,5 +1,3 @@
-#BUMP FOR TESTING
-
 # InfluxData Platform
 
 This is the [monorepo](https://danluu.com/monorepo/) for InfluxData Platform, a.k.a. Influx 2.0 OSS.
