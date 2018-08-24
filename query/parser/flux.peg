@@ -344,47 +344,50 @@ DateTimeLiteral
       return datetime(c.text, c.pos)
     }
 
+// The order of the choices in this rule and those below matters.
+// Minutes (m) must appear before milliseconds (ms) and months (mo),
+// otherwise "10ms" will be parsed as 10 minutes and an extraneous "s".
 DurationLiteral
   = durations:(
-        YearDuration
-      / MonthDuration
-      / WeekDuration
-      / DayDuration
+        DayDuration
       / HourDuration
-      / MinuteDuration
-      / SecondDuration
-      / MilliSecondDuration
       / MicroSecondDuration
+      / MilliSecondDuration
+      / MonthDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
+      / WeekDuration
+      / YearDuration
     ) {
       return durationLiteral(durations, c.text, c.pos)
     }
 
 YearDuration
   = mag:IntegerLiteral unit:YearUnits otherParts:(
-        MonthDuration
-      / WeekDuration
-      / DayDuration
+        DayDuration
       / HourDuration
-      / MinuteDuration
-      / SecondDuration
-      / MilliSecondDuration
       / MicroSecondDuration
+      / MilliSecondDuration
+      / MonthDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
+      / WeekDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
 
 MonthDuration
   = mag:IntegerLiteral unit:MonthUnits otherParts:(
-        WeekDuration
-      / DayDuration
+        DayDuration
       / HourDuration
-      / MinuteDuration
-      / SecondDuration
-      / MilliSecondDuration
       / MicroSecondDuration
+      / MilliSecondDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
+      / WeekDuration
     )?  {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
@@ -393,11 +396,11 @@ WeekDuration
   = mag:IntegerLiteral unit:WeekUnits otherParts:(
         DayDuration
       / HourDuration
-      / MinuteDuration
-      / SecondDuration
-      / MilliSecondDuration
       / MicroSecondDuration
+      / MilliSecondDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
@@ -405,40 +408,40 @@ WeekDuration
 DayDuration
   = mag:IntegerLiteral unit:DayUnits otherParts:(
         HourDuration
-      / MinuteDuration
-      / SecondDuration
-      / MilliSecondDuration
       / MicroSecondDuration
+      / MilliSecondDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
 
 HourDuration
   = mag:IntegerLiteral unit:HourUnits otherParts:(
-        MinuteDuration
-      / SecondDuration
+        MicroSecondDuration
       / MilliSecondDuration
-      / MicroSecondDuration
+      / MinuteDuration
       / NanoSecondDuration
+      / SecondDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
 
 MinuteDuration
   = mag:IntegerLiteral unit:MinuteUnits otherParts:(
-        SecondDuration
+        MicroSecondDuration
       / MilliSecondDuration
-      / MicroSecondDuration
       / NanoSecondDuration
+      / SecondDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)
     }
 
 SecondDuration
   = mag:IntegerLiteral unit:SecondUnits otherParts:(
-        MilliSecondDuration
-      / MicroSecondDuration
+        MicroSecondDuration
+      / MilliSecondDuration
       / NanoSecondDuration
     )? {
       return appendSingleDurations(mag, unit, otherParts, c.text, c.pos)

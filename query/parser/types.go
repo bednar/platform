@@ -342,6 +342,13 @@ func regexLiteral(chars interface{}, text []byte, pos position) (*ast.RegexpLite
 
 func durationLiteral(durations interface{}, text []byte, pos position) (*ast.DurationLiteral, error) {
 	literals := durations.([]*singleDurationLiteral)
+	// The slice built by the parser goes from smallest units to largest (opposite of syntax),
+	// reverse it for the AST produced.
+	for i := 0; i < len(literals) / 2; i++ {
+		j := len(literals) - i - 1
+		literals[i], literals[j] = literals[j], literals[i]
+	}
+
 	return &ast.DurationLiteral{
 		BaseNode: base(text, pos),
 		Values:   toDurationSlice(literals),
@@ -360,9 +367,12 @@ func appendSingleDurations(mag, unit, otherParts interface{}, text []byte, pos p
 	}
 
 	if otherParts == nil {
-		return []*singleDurationLiteral{sdl}, nil
+		slice := make([]*singleDurationLiteral, 1, 10)
+		slice[0] = sdl
+		return slice, nil
 	} else {
-		return append([]*singleDurationLiteral{sdl}, otherParts.([]*singleDurationLiteral)...), nil
+		others := otherParts.([]*singleDurationLiteral)
+		return append(others, sdl), nil
 	}
 }
 
