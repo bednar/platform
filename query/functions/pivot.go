@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const PivotKind = "pivot"
@@ -93,6 +94,10 @@ func newPivotOp() query.OperationSpec {
 
 func (s *PivotOpSpec) Kind() query.OperationKind {
 	return PivotKind
+}
+
+func (s *PivotOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type PivotProcedureSpec struct {

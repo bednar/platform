@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const YieldKind = "yield"
@@ -54,6 +55,10 @@ func newYieldOp() query.OperationSpec {
 
 func (s *YieldOpSpec) Kind() query.OperationKind {
 	return YieldKind
+}
+
+func (s *YieldOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type YieldProcedureSpec struct {

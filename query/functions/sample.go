@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const SampleKind = "sample"
@@ -65,6 +66,10 @@ func newSampleOp() query.OperationSpec {
 
 func (s *SampleOpSpec) Kind() query.OperationKind {
 	return SampleKind
+}
+
+func (s *SampleOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type SampleProcedureSpec struct {

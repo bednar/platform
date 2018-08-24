@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/platform"
 )
 
 const SumKind = "sum"
@@ -40,6 +41,10 @@ func newSumOp() query.OperationSpec {
 
 func (s *SumOpSpec) Kind() query.OperationKind {
 	return SumKind
+}
+
+func (s *SumOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type SumProcedureSpec struct {

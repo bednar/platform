@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/platform"
 )
 
 const CountKind = "count"
@@ -40,6 +41,10 @@ func newCountOp() query.OperationSpec {
 
 func (s *CountOpSpec) Kind() query.OperationKind {
 	return CountKind
+}
+
+func (s *CountOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type CountProcedureSpec struct {

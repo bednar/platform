@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const DifferenceKind = "difference"
@@ -70,6 +71,11 @@ func newDifferenceOp() query.OperationSpec {
 func (s *DifferenceOpSpec) Kind() query.OperationKind {
 	return DifferenceKind
 }
+
+func (s *DifferenceOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
+}
+
 
 type DifferenceProcedureSpec struct {
 	NonNegative bool     `json:"non_negative"`

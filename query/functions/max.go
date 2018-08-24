@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const MaxKind = "max"
@@ -46,6 +47,10 @@ func newMaxOp() query.OperationSpec {
 
 func (s *MaxOpSpec) Kind() query.OperationKind {
 	return MaxKind
+}
+
+func (s *MaxOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type MaxProcedureSpec struct {

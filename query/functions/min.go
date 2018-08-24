@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const MinKind = "min"
@@ -46,6 +47,10 @@ func newMinOp() query.OperationSpec {
 
 func (s *MinOpSpec) Kind() query.OperationKind {
 	return MinKind
+}
+
+func (s *MinOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type MinProcedureSpec struct {

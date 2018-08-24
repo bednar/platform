@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const RenameKind = "rename"
@@ -301,12 +302,20 @@ func (s *RenameOpSpec) Kind() query.OperationKind {
 	return RenameKind
 }
 
+func (s *RenameOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
+}
+
 func newDropOp() query.OperationSpec {
 	return new(DropOpSpec)
 }
 
 func (s *DropOpSpec) Kind() query.OperationKind {
 	return DropKind
+}
+
+func (s *DropOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 func newKeepOp() query.OperationSpec {
@@ -317,12 +326,20 @@ func (s *KeepOpSpec) Kind() query.OperationKind {
 	return KeepKind
 }
 
+func (s *KeepOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
+}
+
 func newDuplicateOp() query.OperationSpec {
 	return new(DuplicateOpSpec)
 }
 
 func (s *DuplicateOpSpec) Kind() query.OperationKind {
 	return DuplicateKind
+}
+
+func (s *DuplicateOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 func (s *RenameOpSpec) Copy() SchemaMutation {

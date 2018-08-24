@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
 	kafka "github.com/segmentio/kafka-go"
+	"github.com/influxdata/platform"
 )
 
 const (
@@ -161,6 +162,10 @@ var ToKafkaSignature = query.DefaultFunctionSignature()
 
 func (ToKafkaOpSpec) Kind() query.OperationKind {
 	return ToKafkaKind
+}
+
+func (s *ToKafkaOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type ToKafkaProcedureSpec struct {

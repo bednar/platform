@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const LimitKind = "limit"
@@ -59,6 +60,10 @@ func newLimitOp() query.OperationSpec {
 
 func (s *LimitOpSpec) Kind() query.OperationKind {
 	return LimitKind
+}
+
+func (s *LimitOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type LimitProcedureSpec struct {

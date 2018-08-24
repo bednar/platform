@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const UniqueKind = "unique"
@@ -50,6 +51,10 @@ func newUniqueOp() query.OperationSpec {
 
 func (s *UniqueOpSpec) Kind() query.OperationKind {
 	return UniqueKind
+}
+
+func (s *UniqueOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type UniqueProcedureSpec struct {

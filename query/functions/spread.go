@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 // SpreadKind is the registration name for Flux, query, plan, and execution.
@@ -44,6 +45,10 @@ type SpreadOpSpec struct {
 // Kind is used to lookup createSpreadOpSpec producing SpreadOpSpec
 func (s *SpreadOpSpec) Kind() query.OperationKind {
 	return SpreadKind
+}
+
+func (s *SpreadOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 func newSpreadProcedure(qs query.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {

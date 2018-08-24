@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const SortKind = "sort"
@@ -63,6 +64,10 @@ func newSortOp() query.OperationSpec {
 
 func (s *SortOpSpec) Kind() query.OperationKind {
 	return SortKind
+}
+
+func (s *SortOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type SortProcedureSpec struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const RangeKind = "range"
@@ -88,6 +89,10 @@ func newRangeOp() query.OperationSpec {
 
 func (s *RangeOpSpec) Kind() query.OperationKind {
 	return RangeKind
+}
+
+func (s *RangeOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type RangeProcedureSpec struct {

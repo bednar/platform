@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/tdigest"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const PercentileKind = "percentile"
@@ -102,6 +103,10 @@ func newPercentileOp() query.OperationSpec {
 
 func (s *PercentileOpSpec) Kind() query.OperationKind {
 	return PercentileKind
+}
+
+func (s *PercentileOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type TDigestPercentileProcedureSpec struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const IntegralKind = "integral"
@@ -56,6 +57,10 @@ func newIntegralOp() query.OperationSpec {
 
 func (s *IntegralOpSpec) Kind() query.OperationKind {
 	return IntegralKind
+}
+
+func (s *IntegralOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type IntegralProcedureSpec struct {

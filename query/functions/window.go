@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const WindowKind = "window"
@@ -123,6 +124,10 @@ func newWindowOp() query.OperationSpec {
 
 func (s *WindowOpSpec) Kind() query.OperationKind {
 	return WindowKind
+}
+
+func (s *WindowOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type WindowProcedureSpec struct {

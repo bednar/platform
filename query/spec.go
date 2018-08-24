@@ -184,13 +184,9 @@ func (q *Spec) Functions() ([]string, error) {
 // BucketsAccessed returns the set of buckets read and written by a query spec
 func (q *Spec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter, err error) {
 	err = q.Walk(func(o *Operation) error {
-		// TODO: panic if the op has params "bucket" or "bucketID", and doesn't implement BucketAwareOperationSpec.
-		bucketAwareOpSpec, ok := o.Spec.(BucketAwareOperationSpec)
-		if ok {
-			opBucketsRead, opBucketsWritten := bucketAwareOpSpec.BucketsAccessed()
-			readBuckets = append(readBuckets, opBucketsRead...)
-			writeBuckets =  append(writeBuckets, opBucketsWritten...)
-		}
+		opBucketsRead, opBucketsWritten := o.Spec.BucketsAccessed()
+		readBuckets = append(readBuckets, opBucketsRead...)
+		writeBuckets =  append(writeBuckets, opBucketsWritten...)
 		return nil
 	})
 

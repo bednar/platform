@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const StateTrackingKind = "stateTracking"
@@ -125,6 +126,10 @@ func newStateTrackingOp() query.OperationSpec {
 
 func (s *StateTrackingOpSpec) Kind() query.OperationKind {
 	return StateTrackingKind
+}
+
+func (s *StateTrackingOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type StateTrackingProcedureSpec struct {

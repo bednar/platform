@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const FirstKind = "first"
@@ -46,6 +47,10 @@ func newFirstOp() query.OperationSpec {
 
 func (s *FirstOpSpec) Kind() query.OperationKind {
 	return FirstKind
+}
+
+func (s *FirstOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type FirstProcedureSpec struct {

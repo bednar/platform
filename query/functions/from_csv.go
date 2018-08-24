@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const FromCSVKind = "fromCSV"
@@ -76,6 +77,10 @@ func newFromCSVOp() query.OperationSpec {
 
 func (s *FromCSVOpSpec) Kind() query.OperationKind {
 	return FromCSVKind
+}
+
+func (s *FromCSVOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type FromCSVProcedureSpec struct {

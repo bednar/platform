@@ -70,11 +70,8 @@ type NewOperationSpec func() OperationSpec
 type OperationSpec interface {
 	// Kind returns the kind of the operation.
 	Kind() OperationKind
-}
 
-// BucketAwareOperationSpec specifies an operation that reads or writes buckets
-type BucketAwareOperationSpec interface {
-	OperationSpec
+	// BucketsAccessed returns which buckets are read and which are written by th operation
 	BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter)
 }
 

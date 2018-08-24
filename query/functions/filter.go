@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const FilterKind = "filter"
@@ -54,6 +55,10 @@ func newFilterOp() query.OperationSpec {
 
 func (s *FilterOpSpec) Kind() query.OperationKind {
 	return FilterKind
+}
+
+func (s *FilterOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type FilterProcedureSpec struct {

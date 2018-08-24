@@ -20,6 +20,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const (
@@ -197,6 +198,10 @@ var ToHTTPSignature = query.DefaultFunctionSignature()
 
 func (ToHTTPOpSpec) Kind() query.OperationKind {
 	return ToHTTPKind
+}
+
+func (s *ToHTTPOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type ToHTTPProcedureSpec struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const CovarianceKind = "covariance"
@@ -81,6 +82,10 @@ func newCovarianceOp() query.OperationSpec {
 
 func (s *CovarianceOpSpec) Kind() query.OperationKind {
 	return CovarianceKind
+}
+
+func (s *CovarianceOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type CovarianceProcedureSpec struct {

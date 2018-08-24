@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const DistinctKind = "distinct"
@@ -51,6 +52,10 @@ func newDistinctOp() query.OperationSpec {
 
 func (s *DistinctOpSpec) Kind() query.OperationKind {
 	return DistinctKind
+}
+
+func (s *DistinctOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type DistinctProcedureSpec struct {

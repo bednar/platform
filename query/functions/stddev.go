@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/platform"
 )
 
 const StddevKind = "stddev"
@@ -40,6 +41,10 @@ func newStddevOp() query.OperationSpec {
 
 func (s *StddevOpSpec) Kind() query.OperationKind {
 	return StddevKind
+}
+
+func (s *StddevOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type StddevProcedureSpec struct {

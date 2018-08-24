@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/platform"
 )
 
 const SkewKind = "skew"
@@ -42,6 +43,10 @@ func newSkewOp() query.OperationSpec {
 
 func (s *SkewOpSpec) Kind() query.OperationKind {
 	return SkewKind
+}
+
+func (s *SkewOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type SkewProcedureSpec struct {

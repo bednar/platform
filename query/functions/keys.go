@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const KeysKind = "keys"
@@ -60,6 +61,10 @@ func newKeysOp() query.OperationSpec {
 
 func (s *KeysOpSpec) Kind() query.OperationKind {
 	return KeysKind
+}
+
+func (s *KeysOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type KeysProcedureSpec struct {

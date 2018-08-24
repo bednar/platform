@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const MapKind = "map"
@@ -64,6 +65,10 @@ func newMapOp() query.OperationSpec {
 
 func (s *MapOpSpec) Kind() query.OperationKind {
 	return MapKind
+}
+
+func (s *MapOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type MapProcedureSpec struct {

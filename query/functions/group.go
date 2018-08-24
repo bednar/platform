@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const GroupKind = "group"
@@ -92,6 +93,10 @@ func newGroupOp() query.OperationSpec {
 
 func (s *GroupOpSpec) Kind() query.OperationKind {
 	return GroupKind
+}
+
+func (s *GroupOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type GroupMode int

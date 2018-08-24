@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const LastKind = "last"
@@ -41,6 +42,10 @@ func createLastOpSpec(args query.Arguments, a *query.Administration) (query.Oper
 
 func newLastOp() query.OperationSpec {
 	return new(LastOpSpec)
+}
+
+func (s *LastOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 func (s *LastOpSpec) Kind() query.OperationKind {

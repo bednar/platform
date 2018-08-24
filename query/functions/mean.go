@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/platform/query"
 	"github.com/influxdata/platform/query/execute"
 	"github.com/influxdata/platform/query/plan"
+	"github.com/influxdata/platform"
 )
 
 const MeanKind = "mean"
@@ -41,6 +42,10 @@ func newMeanOp() query.OperationSpec {
 
 func (s *MeanOpSpec) Kind() query.OperationKind {
 	return MeanKind
+}
+
+func (s *MeanOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type MeanProcedureSpec struct {

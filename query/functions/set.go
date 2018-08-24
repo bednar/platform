@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const SetKind = "set"
@@ -56,6 +57,10 @@ func newSetOp() query.OperationSpec {
 
 func (s *SetOpSpec) Kind() query.OperationKind {
 	return SetKind
+}
+
+func (s *SetOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type SetProcedureSpec struct {

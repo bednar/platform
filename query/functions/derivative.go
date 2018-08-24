@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const DerivativeKind = "derivative"
@@ -84,6 +85,10 @@ func newDerivativeOp() query.OperationSpec {
 
 func (s *DerivativeOpSpec) Kind() query.OperationKind {
 	return DerivativeKind
+}
+
+func (s *DerivativeOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type DerivativeProcedureSpec struct {

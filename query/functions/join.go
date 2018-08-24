@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
 	"github.com/pkg/errors"
+	"github.com/influxdata/platform"
 )
 
 const JoinKind = "join"
@@ -171,6 +172,10 @@ func newJoinOp() query.OperationSpec {
 
 func (s *JoinOpSpec) Kind() query.OperationKind {
 	return JoinKind
+}
+
+func (s *JoinOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type MergeJoinProcedureSpec struct {

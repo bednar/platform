@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
 	"github.com/influxdata/platform/query/values"
+	"github.com/influxdata/platform"
 )
 
 const ShiftKind = "shift"
@@ -66,6 +67,10 @@ func newShiftOp() query.OperationSpec {
 
 func (s *ShiftOpSpec) Kind() query.OperationKind {
 	return ShiftKind
+}
+
+func (s *ShiftOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type ShiftProcedureSpec struct {

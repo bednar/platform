@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/platform/query/interpreter"
 	"github.com/influxdata/platform/query/plan"
 	"github.com/influxdata/platform/query/semantic"
+	"github.com/influxdata/platform"
 )
 
 const CumulativeSumKind = "cumulativeSum"
@@ -51,6 +52,10 @@ func newCumulativeSumOp() query.OperationSpec {
 
 func (s *CumulativeSumOpSpec) Kind() query.OperationKind {
 	return CumulativeSumKind
+}
+
+func (s *CumulativeSumOpSpec) BucketsAccessed() (readBuckets, writeBuckets []platform.BucketFilter) {
+	return nil, nil
 }
 
 type CumulativeSumProcedureSpec struct {

@@ -9,7 +9,7 @@ import (
 // Authorizer provides a method for ensuring that the buckets accessed by a query spec
 // are allowed access by a give Authorization
 type Authorizer interface {
-	Authorize(ctx context.Context, spec *Spec, auth platform.Authorization, logger Logger) error
+	Authorize(ctx context.Context, spec *Spec, auth platform.Authorization) error
 }
 
 // NewAuthorizer creates a new Authorizer
@@ -23,7 +23,7 @@ type authorizer struct {
 
 // Authorize finds all the buckets read and written by the given spec, and ensures that execution is allowed
 // given the Authorization.  Returns nil on success, and an error with an appropriate message otherwise.
-func (a *authorizer) Authorize(ctx context.Context, spec *Spec, auth platform.Authorization, auditLogger Logger) error {
+func (a *authorizer) Authorize(ctx context.Context, spec *Spec, auth platform.Authorization) error {
 
 	readBuckets, writeBuckets, err := spec.BucketsAccessed()
 
@@ -56,8 +56,6 @@ func (a *authorizer) Authorize(ctx context.Context, spec *Spec, auth platform.Au
 			return errors.New("No write permission for bucket: \"" + bucket.Name + "\"")
 		}
 	}
-
-	// TODO: log pass/fail decision to audit logger
 
 	return nil
 }
