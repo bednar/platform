@@ -209,7 +209,7 @@ func platformF(cmd *cobra.Command, args []string) {
 	errc := make(chan error)
 
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGTERM)
+	signal.Notify(sigs, syscall.SIGTERM, os.Interrupt)
 
 	// NATS streaming server
 	natsServer := nats.NewServer(nats.Config{FilestoreDir: walPath})
