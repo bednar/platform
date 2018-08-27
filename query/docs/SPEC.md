@@ -163,6 +163,7 @@ Examples:
 A duration literal is a representation of a length of time.
 It has an integer part and a duration unit part.
 Multiple durations may be specified together and the resulting duration is the sum of each smaller part.
+When several durations are specified together, larger units must appear before smaller ones, and there can be no repeated units.
 
     duration_lit  = { int_lit duration_unit } .
     duration_unit = "ns" | "us" | "µs" | "ms" | "s" | "m" | "h" | "d" | "w" | "mo" | "y" .
