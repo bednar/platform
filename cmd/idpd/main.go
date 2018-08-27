@@ -190,7 +190,7 @@ func platformF(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// this is an example of using a subscriber to consume from the channel. It should be removed.
+	// TODO(jm): this is an example of using a subscriber to consume from the channel. It should be removed.
 	subscriber, err := nats.NewSubscriber("nats-subscriber")
 	if err := subscriber.Subscribe(NatsSubject, IngressGroup, &nats.LogHandler{Logger: logger}); err != nil {
 		logger.Error("failed to create nats subscriber", zap.Error(err))
