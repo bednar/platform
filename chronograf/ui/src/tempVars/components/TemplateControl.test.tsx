@@ -4,7 +4,7 @@ import {shallow} from 'enzyme'
 import TemplateControl from 'src/tempVars/components/TemplateControl'
 import TextTemplateSelector from 'src/tempVars/components/TextTemplateSelector'
 import TemplateDropdown from 'src/tempVars/components/TemplateDropdown'
-import {source} from 'test/resources'
+import {source} from 'mocks/dummy'
 
 import {TemplateType, TemplateValueType} from 'src/types'
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import {shallow} from 'enzyme'
 
-import {source} from 'test/resources'
+import {source} from 'mocks/dummy'
 import TextTemplateBuilder from 'src/tempVars/components/TextTemplateBuilder'
 
 import {TemplateType, TemplateValueType} from 'src/types'

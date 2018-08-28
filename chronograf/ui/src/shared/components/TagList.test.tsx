@@ -5,7 +5,7 @@ import {shallow} from 'enzyme'
 import TagList from 'src/shared/components/TagList'
 import TagListItem from 'src/shared/components/TagListItem'
 
-import {query, source} from 'test/resources'
+import {query, source} from 'mocks/dummy'
 
 const setup = (override = {}) => {
   const props = {

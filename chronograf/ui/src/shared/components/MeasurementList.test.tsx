@@ -3,7 +3,7 @@ import React from 'react'
 import MeasurementList from 'src/shared/components/MeasurementList'
 import MeasurementListFilter from 'src/shared/components/MeasurementListFilter'
 import MeasurementListItem from 'src/shared/components/MeasurementListItem'
-import {query, source} from 'test/resources'
+import {query, source} from 'mocks/dummy'
 
 const setup = (override = {}) => {
   const props = {

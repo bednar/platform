@@ -3,7 +3,7 @@ import {parseResponse} from 'src/shared/parsing/flux/response'
 import {
   CSV_TO_DYGRAPH,
   CSV_TO_DYGRAPH_MISMATCHED,
-} from 'test/shared/parsing/flux/constants'
+} from 'src/shared/parsing/flux/constants'
 
 describe('fluxTablesToDygraph', () => {
   it('can parse flux tables to dygraph series', () => {

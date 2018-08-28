@@ -1,13 +1,13 @@
 import Walker from 'src/flux/ast/walker'
-import From from 'test/flux/ast/from'
-import Complex from 'test/flux/ast/complex'
+import From from 'src/flux/ast/stubs/from'
+import Complex from 'src/flux/ast/stubs/complex'
 import {
   StringLiteral,
   Expression,
   ArrowFunction,
   Fork,
   JoinWithObjectArg,
-} from 'test/flux/ast/variable'
+} from 'src/flux/ast/stubs/variable'
 
 describe('Flux.AST.Walker', () => {
   describe('Walker#functions', () => {

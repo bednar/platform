@@ -3,7 +3,7 @@ import {shallow} from 'enzyme'
 import {CheckSources} from 'src/CheckSources'
 import MockChild from 'mocks/MockChild'
 
-import {source} from 'test/resources'
+import {source} from 'mocks/dummy'
 
 jest.mock('src/sources/apis', () => require('mocks/sources/apis'))
 const getSources = jest.fn(() => Promise.resolve)

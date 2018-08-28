@@ -1,8 +1,8 @@
 import {bodyNodes} from 'src/flux/helpers'
-import suggestions from 'test/flux/semantic_graph/suggestions'
-import Variables from 'test/flux/ast/variables'
-import {Expression, StringLiteral} from 'test/flux/ast/variable'
-import From from 'test/flux/ast/from'
+import suggestions from 'src/flux/helpers/stubs/suggestions'
+import Variables from 'src/flux/ast/stubs/variables'
+import {Expression, StringLiteral} from 'src/flux/ast/stubs/variable'
+import From from 'src/flux/ast/stubs/from'
 
 const id = expect.any(String)
 

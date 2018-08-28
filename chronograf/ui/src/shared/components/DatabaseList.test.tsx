@@ -3,7 +3,7 @@ import React from 'react'
 import DatabaseList from 'src/shared/components/DatabaseList'
 import DatabaseListItem from 'src/shared/components/DatabaseListItem'
 
-import {query, source} from 'test/resources'
+import {query, source} from 'mocks/dummy'
 
 // mock data
 const dbrp1 = {database: 'db1', retentionPolicy: 'rp1'}

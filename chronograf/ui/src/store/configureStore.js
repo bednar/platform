@@ -9,7 +9,6 @@ import statusReducers from 'src/status/reducers'
 import sharedReducers from 'src/shared/reducers'
 import cellEditorOverlay from 'src/dashboards/reducers/cellEditorOverlay'
 import persistStateEnhancer from './persistStateEnhancer'
-import servicesReducer from 'src/shared/reducers/services'
 import scriptReducer from 'src/flux/reducers/script'
 import sourceReducer from 'src/sources/reducers/sources'
 
@@ -26,7 +25,6 @@ const rootReducer = combineReducers({
   hoverTime: hoverTimeReducer,
   dashboards: dashboardsReducer,
   routing: routerReducer,
-  services: servicesReducer,
   script: scriptReducer,
   sources: sourceReducer,
 })

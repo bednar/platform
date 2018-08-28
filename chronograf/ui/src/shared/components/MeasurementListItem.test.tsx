@@ -3,7 +3,7 @@ import React from 'react'
 import MeasurementListItem from 'src/shared/components/MeasurementListItem'
 import TagList from 'src/shared/components/TagList'
 
-import {query as defaultQuery} from 'test/resources'
+import {query as defaultQuery} from 'mocks/dummy'
 
 const setup = (overrides = {}) => {
   const props = {

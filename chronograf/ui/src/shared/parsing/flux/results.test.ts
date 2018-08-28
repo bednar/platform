@@ -5,7 +5,7 @@ import {
   MULTI_SCHEMA_RESPONSE,
   EXPECTED_COLUMNS,
   TRUNCATED_RESPONSE,
-} from 'test/shared/parsing/flux/constants'
+} from 'src/shared/parsing/flux/constants'
 
 describe('Flux results parser', () => {
   it('parseResponse into the right number of tables', () => {

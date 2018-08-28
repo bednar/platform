@@ -2,7 +2,6 @@ import React from 'react'
 import {shallow} from 'enzyme'
 
 import {SourceForm} from 'src/sources/components/SourceForm'
-import {me} from 'test/resources'
 
 const setup = (override = {}) => {
   const noop = () => {}
@@ -24,7 +23,6 @@ const setup = (override = {}) => {
     isUsingAuth: false,
     gotoPurgatory: noop,
     isInitialSource: false,
-    me,
     ...override,
   }
 

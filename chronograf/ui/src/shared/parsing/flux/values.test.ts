@@ -1,5 +1,5 @@
 import parseValuesColumn from 'src/shared/parsing/flux/values'
-import {TAGS_RESPONSE} from 'test/shared/parsing/flux/constants'
+import {TAGS_RESPONSE} from 'src/shared/parsing/flux/constants'
 
 describe('tagKeys parser', () => {
   it('returns no measurements for an empty results response', () => {

@@ -1,6 +1,6 @@
 import {generateForHosts} from 'src/utils/tempVars'
 import {TemplateValueType, TemplateType} from 'src/types'
-import {source} from 'test/resources'
+import {source} from 'mocks/dummy'
 
 describe('utils.tempVars', () => {
   describe('generateForHosts', () => {

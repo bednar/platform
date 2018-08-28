@@ -20,7 +20,7 @@ import {
 } from 'src/shared/constants/thresholds'
 import {validateLineColors} from 'src/shared/constants/graphColorPalettes'
 
-import {cell, axes} from 'test/fixtures'
+import {cell, axes} from 'src/dashboards/resources'
 
 const defaultCell = {
   ...cell,
