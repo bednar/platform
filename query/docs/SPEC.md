@@ -441,10 +441,6 @@ In addition to explicit blocks in the source code, there are implicit blocks:
 4. Each file has a _file block_ containing all Flux source text in that file.
 5. Each function literal has its own _function block_ even if not explicitly declared.
 
-**Note:** The syntax of a _file block_ is defined as:
-
-    FileBlock = [PackageStatement] StatementList
-
 Blocks nest and influence scoping.
 
 ### Assignment and scope
@@ -570,11 +566,18 @@ Examples:
     baz = (y=<-) => // function body elided
     foo() |> bar() |> baz() // equivalent to baz(x:bar(y:foo()))
 
+### Program
+
+A Flux program is a sequence of statements defined by
+
+    Program = [PackageStatement] [ImportList] StatementList .
+    ImportList = { ImportStatement } .
+
 ### Statements
 
 A statement controls execution.
 
-    Statement = ImportStatement | OptionStatement | VarAssignment |
+    Statement = OptionStatement | VarAssignment |
                 ReturnStatement | ExpressionStatement | BlockStatment .
 
 #### Package statement
