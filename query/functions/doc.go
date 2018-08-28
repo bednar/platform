@@ -55,18 +55,54 @@ because several user-facing query functions may reduce to the same or similar in
 
 The primary function of the plan phase is to re-order, re-write and possibly combine the operations
 described in the incoming query in order to improve the performance of the query execution.  The planner has two primary
-operations for doing this: Pushdowns and ReWrites.  A push down operation is a planning technique for pushing the logic
-from one operation into another so that only a single composite function needs to be called instead of two simpler function call.
+operations for doing this: Pushdowns and ReWrites.
+
+A push down operation is a planning technique for pushing the logic from one operation into another so that only a single
+composite function needs to be called instead of two simpler function call.
 A pushdown is implemented by implementing the plan.PushDownProcedureSpec interface, which requires functions that define
 the rules and methods for executing a pushdown operation.
 
-A Rewrite rule is used to modify one or more ProcedureSpecs in a plan whenever certain rules apply.
+A Rewrite rule is used to modify one or more ProcedureSpecs in cases where redundant or complementary operations can be
+combined to get a simpler result.  Similar to a pushdown operation, the rewrite is triggered whenever certain rules apply.
 Rewrite rules are implemented differently and require a separate registration:
 	plan.RegisterRewriteRule(r RewriteRule)
 
 Which in turn requires an implementation of plan.RewriteRule.
 
-Finally, the execute phase is tasked with executing the specific data processing algorithm for the function.
+Finally, the execute phase is tasked with executing the specific data processing algorithm for the function.  A function
+implementation registers an implementation of the  execute.Transformation interface that implements functions that
+control how the execution engine will take an input table, apply the function, and produce an output table.  A transformation
+implementation is registered via:
+	execute.RegisterTransformation(k plan.ProcedureKind, c execute.CreateTransformation)
 
+In addition to implementing the transformation type, a number of helper types and functions are provided that facilitate
+the transformation process:
+	execute.Administration
+	execute.Dataset
+	execute.TableBuilderCache
+	execute.TableBuilder
+	execute.NewAggregateTransformationAndDataset
+	execute.NewRowSelectorTransformationAndDataset
+	query.Table
+	query.GroupKey
+	query.ColMeta
+	query.ColReader
+
+The most important part of a function implementation is for the interface method execute.Transformation.Process(id execute.DatasetID, tbl query.Table).
+While the full details of how to implement this function are out of the scope of this document, a typical implementation
+will do the following:
+1.  Validate the incoming table schema if needed
+2.  Construct the column and group key schema for the output table via the table builder.
+3.  Process the incoming table via query.Table.Do, and use the input data to determine the output rows for the table builder.
+4.  Add rows to the output table.
+
+Finally, there is a special class of functions do not receive an input table from another function's output.
+In other words, these transformations do not have a parent process that supplies it with table data.  These transformation
+functions are referred to as sources, and naturally implement a connection to a data source (e.g. influxdb, prometheus, csvFile, etc.).
+They are registered using:
+	execute.RegisterSource(k plan.ProcedureKind, c execute.CreateSource)
+
+The substantial part of a source implementation is its Run method, which should connect to the data source,
+collect its data into query.Table structures, and apply any transformations associated with the source.
 */
 package functions
