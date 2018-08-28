@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
-import linksReducer from 'shared/reducers/links'
-import {linksGetCompleted} from 'shared/actions/links'
+import linksReducer from 'src/shared/reducers/links'
+import {linksGetCompleted} from 'src/shared/actions/links'
 
 const links = {
   layouts: '/chronograf/v1/layouts',
