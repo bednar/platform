@@ -2,6 +2,7 @@ package nats
 
 import (
 	stand "github.com/nats-io/nats-streaming-server/server"
+	"github.com/nats-io/nats-streaming-server/stores"
 )
 
 const ServerName = "platform"
@@ -37,6 +38,6 @@ type Config struct {
 // NewServer creates and returns a new server struct from the provided config
 func NewServer(c Config) *Server {
 	return &Server{
-		config: Config
+		config: c,
 	}
 }

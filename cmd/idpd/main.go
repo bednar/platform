@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
+	"path/filepath"
 	"runtime"
 	"syscall"
 	"time"
@@ -55,7 +56,7 @@ var (
 	walPath           string
 )
 
-func influxDir() string, error {
+func influxDir() (string, error) {
 	var dir string
 	// By default, store meta and data files in current users home directory
 	u, err := user.Current()
@@ -102,7 +103,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	platformCmd.Flags().StringVar(&persistencePath, "wal-path", filepath.Join(dir, "wal"), "path to persistent WAL files")
+	platformCmd.Flags().StringVar(&walPath, "wal-path", filepath.Join(dir, "wal"), "path to persistent WAL files")
 	viper.BindEnv("WAL_PATH")
 	if h := viper.GetString("WAL_PATH"); h != "" {
 		walPath = h
