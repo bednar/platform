@@ -94,7 +94,7 @@ Examples:
 The following keywords are reserved and may not be used as identifiers:
 
     and    import  not  return
-    empty  in      or
+    empty  in      or   package
 
 [IMPL#256](https://github.com/influxdata/platform/issues/256) Add in and empty operator support  
 [IMPL#334](https://github.com/influxdata/platform/issues/334) Add "import" support  
@@ -441,6 +441,10 @@ In addition to explicit blocks in the source code, there are implicit blocks:
 4. Each file has a _file block_ containing all Flux source text in that file.
 5. Each function literal has its own _function block_ even if not explicitly declared.
 
+**Note:** The syntax of a _file block_ is defined as:
+
+    FileBlock = [PackageStatement] StatementList
+
 Blocks nest and influence scoping.
 
 ### Assignment and scope
@@ -570,8 +574,8 @@ Examples:
 
 A statement controls execution.
 
-    Statement = PackageStatement | ImportStatement | OptionStatement |
-                VarAssignment | ReturnStatement | ExpressionStatement | BlockStatment .
+    Statement = ImportStatement | OptionStatement | VarAssignment |
+                ReturnStatement | ExpressionStatement | BlockStatment .
 
 #### Package statement
 
@@ -579,7 +583,7 @@ A statement controls execution.
 
 A package statement defines a package block.
 Package names must be valid Flux identifiers.
-The package statement must be the first line of every Flux source file.
+The package statement must be the first statement of every Flux source file.
 If a file does not declare a package statement, all identifiers in that file will belong to the special _main_ package.
 
 ##### package main
@@ -588,7 +592,7 @@ The _main_ package is special for a few reasons:
 
 1. It defines the entrypoint of a Flux program
 2. It cannot be imported
-3. All composite query operations defined in the _main_ package are coerced into producing side effects
+3. All query specifications produced after evaluating the _main_ package are coerced into producing side effects
 
 #### Import statement
 
@@ -616,7 +620,7 @@ bar.x
 
 A package's import path is always absolute.
 Flux does not support relative imports.
-Assignment cannot be made inside of an imported package.
+Assigment into the namespace of an imported package is not allowed.
 A package cannot access nor modify the identifiers belonging to the imported packages of its imported packages.
 Every statement contained in an imported package is evaluated.
 
@@ -697,12 +701,12 @@ Examples:
 
 ### Side Effects
 
-Side effects can occur in two ways in Flux.
+Side effects can occur in two ways.
 
 1. By reassigning builtin options
 2. By calling a function that produces side effects
 
-In Flux a function produces side effects if it is explicitly declared to have side effects or if it calls a function that itself produces side effects.
+A function produces side effects when it is explicitly declared to have side effects or when it calls a function that itself produces side effects.
 
 ### Built-in functions
 
@@ -979,12 +983,13 @@ Examples:
 The execution of a query is separate and distinct from the execution of Flux the language.
 The input into the query engine is a query specification.
 
-The output of an Flux program is a query specification, which then may be passed into the query execution engine.
+The output of a Flux program is a query specification, which then may be passed into the query execution engine.
 
 ### Query specification
 
 A query specification consists of a set of operations and a set of edges between those operations.
 The operations and edges must form a directed acyclic graph (DAG).
+A query specification produces side effects when at least one of its operations produces side effects.
 
 #### Encoding
 
@@ -1099,6 +1104,8 @@ All operations may consume a stream and always produce a new stream.
 Most operations output one table for every table they receive from the input stream.
 
 Operations that modify the group keys or values will need to regroup the tables in the output stream.
+
+An operation produces side effects when it is constructed from a function that produces side effects.
 
 ### Built-in operations
 
