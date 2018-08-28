@@ -2,13 +2,13 @@ package http
 
 import (
 	"compress/gzip"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/influxdata/platform"
-	"github.com/influxdata/platform/context"
 	"github.com/influxdata/platform/kit/errors"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -132,7 +132,7 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 }
 
 func decodeWriteRequest(ctx context.Context, r *http.Request) (*postWriteRequest, error) {
-	req := &postWriteRequest
+	req := &postWriteRequest{}
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		return nil, err
 	}
