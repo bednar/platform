@@ -3,12 +3,12 @@ package http
 import (
 	"compress/gzip"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/influxdata/platform"
+	pcontext "github.com/influxdata/platform/context"
 	"github.com/influxdata/platform/kit/errors"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -55,7 +55,7 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 		defer in.Close()
 	}
 
-	tok, err := context.GetToken(ctx)
+	tok, err := pcontext.GetToken(ctx)
 	if err != nil {
 		EncodeError(ctx, err, w)
 		return
@@ -67,7 +67,7 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := decodeWriteRequest(ctx, r)
+	req := decodeWriteRequest(ctx, r)
 	if err != nil {
 		EncodeError(ctx, err, w)
 		return
@@ -131,15 +131,16 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func decodeWriteRequest(ctx context.Context, r *http.Request) (*postWriteRequest, error) {
-	req := &postWriteRequest{}
-	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return nil, err
+func decodeWriteRequest(ctx context.Context, r *http.Request) *postWriteRequest {
+	qp := r.URL.Query()
+
+	return &postWriteRequest{
+		Bucket: qp.Get("bucket"),
+		Org:    qp.Get("org"),
 	}
-	return req, nil
 }
 
 type postWriteRequest struct {
-	Org    string `json: "org"`
-	Bucket string `json: "bucket"`
+	Org    string
+	Bucket string
 }
