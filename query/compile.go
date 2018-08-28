@@ -152,7 +152,7 @@ var builtinDeclarations = make(semantic.DeclarationScope)
 var builtinScripts = make(map[string]string)
 var finalized bool
 
-// RegisterBuiltIn adds any variable declarations written in flux script to the builtin scope.
+// RegisterBuiltIn adds any variable declarations written in Flux script to the builtin scope.
 func RegisterBuiltIn(name, script string) {
 	if finalized {
 		panic(errors.New("already finalized, cannot register builtin"))
@@ -161,9 +161,9 @@ func RegisterBuiltIn(name, script string) {
 }
 
 // RegisterFunction adds a new builtin top level function.
-// name: the name of the function as it would be called
-// c: a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error)
-// sig: a function signature type that specifies the names and types of each argument for the function
+// Name is the name of the function as it would be called.
+// c is a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error).
+// sig is a function signature type that specifies the names and types of each argument for the function.
 func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionSignature) {
 	f := function{
 		t:             semantic.NewFunctionType(sig),

@@ -3,137 +3,70 @@ Package functions is a collection of built-in functions that are callable in the
 be extended at runtime by writing function expressions, there are some limitations for which a built-in function is
 necessary, such as the need for custom data structures, stateful procedures, complex looping and branching, and
 connection to external services.  Another reason for implementing a built-in function is to provide a function that is
-broadly applicaple for many users (e.g., sum() or max()).
+broadly applicable for many users (e.g., sum() or max()).
 
-The functions package is rarely accessed as a direct API.  Rather, the query processing engine registers various
-interfaces implemented within the functions package and executes them generically using an API that is common to all
+The functions package is rarely accessed as a direct API.  Rather, the query processing engine accepts named registrations
+for various interfaces implemented within the functions package and executes them generically using an API that is common to all
 functions.  The registration process is executed by running the init() function in each function file, and is then finalized
 by importing package builtin, which itself imports the functions package and runs a final setup routine that finalizes
 installation of the builtin functions to the query processor.
 
 Because of this design, a built-in function implementation consists of a bundle of different interface implementations
-that are required at various phases of query execution.  It's important that each of the interfaces is completely
-implemented and correctly registered with the query processor so that the function can be properly initialized, planned,
-and executed in the context of a whole query.  The remainder of this documentation details the different interfaces that
-must be implemented in order to properly implement a built-in function as part of the query processor.
+that are required at various phases of query execution.  These phases are query, plan and execute.  The query phase is
+for identifying initializing the parameter sets for each function, and initializing the internal representation of a query.
+The plan phase is for creating a final execution plan, and the execution phase is for physically accessing the data
+and computing a final result.
 
-Query Package Registrations
+The query phase takes each function call in a query and performs a match against the registry to see if
+there are type definitions for a built-in operation.  If matched, it will instantiate the correct query.OperationSpec
+type for that function, given the runtime parameters.
+If a builtin OperationSpec is not found, then it will check for functions defined at runtime, and otherwise return an error.
+The following registrations are typically executed in the function's init() for the query phase to execute properly:
 
-The query package is responsible for verifying the syntax, parsing arguments and generating internal function representations
-for each built-in. The following registrations are defined in query/compile.go:
+	query.RegisterFunction(name string, c query.CreateOperationSpec, sig semantic.FunctionSignature)
+	query.RegisterOpSpec(k query.OperationKind, c query.NewOperationSpec)
 
-	// RegisterFunction adds a new builtin top level function.
-	// name: the name of the function as it would be called
-	// c: a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error)
-	// sig: a function signature type that specifies the names and types of each argument for the function
-	func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionSignature)
+Refer to the documentation for more information. There, you will also find information two alternative registration functions:
+	query.RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionSignature)
+	query.RegisterBuiltIn(name, script string)
 
-	// RegisterFunctionWithSideEffect adds a new builtin top level function that produces side effects.
-	// For example, the builtin functions yield(), toKafka(), and toHTTP() all produce side effects.
-	// name: the name of the function as it would be called
-	// c: a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error)
-	// sig: a function signature type that specifies the names and types of each argument for the function
-	func RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionSignature)
+Summarizing the query phase, a typical function implementation must instantiate and register a semantic.FunctionSignature,
+define and register an implementation of a query.OperationSpec, and implement the Kind(), createOperationSpec and newOperationSpec
+functions, which are all defined in the query package.
 
-	// RegisterOpSpec registers an operation spec with a given kind.
-	// k: a label that uniquely identifies this operation. If the kind has already been registered the call panics.
-	// c: a function reference that creates a new, default-initialized opSpec for the given kind.
-	func RegisterOpSpec(k OperationKind, c NewOperationSpec)
+In the plan phase, an operation spec must be converted to a plan.ProcedureSpec.  A query plan must know what operations to
+carry out, including the function names and parameters.    In the trivial case, the OperationSpec
+and ProcedureSpec have identical fields and the operation spec may be encapsulated as part of the procedure spec. The base
+interface for a plan.ProcedureSpec requires a Kind() function, as well as a Copy() function which should perform a deep copy
+of the object.  Refer to the following interfaces for more information about designing a procedure spec:
+	plan.ProcedureSpec
+	plan.PushDownProcedureSpec
+	plan.BoundedProcedureSpec
+	plan.YieldProcedureSpec
+	plan.AggregateProcedureSpec
+	plan.ParentAwareProcedureSpec
 
-	// RegisterBuiltIn adds any variable declarations written in flux script to the builtin scope.
-	func RegisterBuiltIn(name, script string)
+Once you have determined the interface(s) that must be implemented for your function, you register them with
+	plan.RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...query.OperationKind)
 
-There are several types that you must implement to properly register your new function in the query package:
+A complete registration requires a definition of the function's Procedure Spec, a plan.CreateProcedureSpec function, and
+a query.OperationSpec.  One feature to note is that the registration takes a list of query.OperationSpec values. This is
+because several user-facing query functions may reduce to the same or similar internal procedure.
 
-semantic.FunctionSignature:
+The primary function of the plan phase is to re-order, re-write and possibly combine the operations
+described in the incoming query in order to improve the performance of the query execution.  The planner has two primary
+operations for doing this: Pushdowns and ReWrites.  A push down operation is a planning technique for pushing the logic
+from one operation into another so that only a single composite function needs to be called instead of two simpler function call.
+A pushdown is implemented by implementing the plan.PushDownProcedureSpec interface, which requires functions that define
+the rules and methods for executing a pushdown operation.
 
-this signature defines the named arguments for the function, along with their types.  All builtin functions provide
-an instance of the same type, semantic.FunctionSignature and it's the implementor's job to populate its members with
-the correct values for the new function.  In many cases, it's simplest to start with a default signature and add custom
-parameters to it:
+A Rewrite rule is used to modify one or more ProcedureSpecs in a plan whenever certain rules apply.
+Rewrite rules are implemented differently and require a separate registration:
+	plan.RegisterRewriteRule(r RewriteRule)
 
-	var covarianceSignature = query.DefaultFunctionSignature()
-	func init() {
-		covarianceSignature.Params["pearsonr"] = semantic.Bool
-		covarianceSignature.Params["valueDst"] = semantic.String
-		...
-	}
+Which in turn requires an implementation of plan.RewriteRule.
 
-Alternatively, a full instantiation can be used:
-
-	var joinSignature = semantic.FunctionSignature{
-		Params: map[string]semantic.Type{
-			"tables": semantic.Object,
-			"on":     semantic.NewArrayType(semantic.String),
-			"method": semantic.String,
-		},
-		ReturnType:   query.TableObjectType,
-		PipeArgument: "tables",
-	}
-
-The second type that must be implemented is the OpSpec.  In this case, the query package expects a custom implementation
-of the query.OperationSpec type.  Only the Kind() function is in the interface, but two helper functions must also be
-implemented and registered with the query package, a create function and a new function.
-These are best understood by example, as for the built-in covariance function:
-
-	// define the fields that will be needed to compute this function.
-	type CovarianceOpSpec struct {
-		PearsonCorrelation bool   `json:"pearsonr"`
-		ValueDst           string `json:"valueDst"`
-		// arguments that are common to all Aggregate functions are defined in a shared type
-		execute.AggregateConfig
-	}
-
-	const CovarianceKind = "covariance"
-	func createCovarianceOpSpec(args query.Arguments, a *query.Administration) (query.OperationSpec, error) {
-		if err := a.AddParentFromArgs(args); err != nil {
-			return nil, err
-		}
-
-		spec := new(CovarianceOpSpec)
-		pearsonr, ok, err := args.GetBool("pearsonr")
-		if err != nil {
-			return nil, err
-		} else if ok {
-			spec.PearsonCorrelation = pearsonr
-		}
-
-		label, ok, err := args.GetString("valueDst")
-		if err != nil {
-			return nil, err
-		} else if ok {
-			spec.ValueDst = label
-		} else {
-			spec.ValueDst = execute.DefaultValueColLabel
-		}
-
-		if err := spec.AggregateConfig.ReadArgs(args); err != nil {
-			return nil, err
-		}
-		if len(spec.Columns) != 2 {
-			return nil, errors.New("must provide exactly two columns")
-		}
-		return spec, nil
-	}
-
-	func newCovarianceOp() query.OperationSpec {
-		return new(CovarianceOpSpec)
-	}
-
-	func (s *CovarianceOpSpec) Kind() query.OperationKind {
-		return CovarianceKind
-	}
-
-To summarize this section, a new function implementation must instantiate and register a query.Signature, define and
-register an implementation of a query.OperationSpec, and implement the Kind(), createXXOpSpec and newXXOpSpec functions.
-The createXXOpSpec function is registered so that the query processor knows how to parse the function arguments and create
-a proper OperationSpec representation of the function call.  The newXXOp function is registered to aid the query processor in
-allocating a new OperationSpec struct of the proper type, and the Kind() function is implemented to inform the system
-about the OperationSpec's actual type when the type would otherwise be ambiguous.
-
-The end result of these registrations is that the query processor has the information it needs to create an internal
-representation of a function call that can then be consumed by the logical planner that will produce an execution plan for
-a complete query.
+Finally, the execute phase is tasked with executing the specific data processing algorithm for the function.
 
 */
 package functions
