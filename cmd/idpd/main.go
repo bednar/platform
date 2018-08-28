@@ -214,21 +214,24 @@ func platformF(cmd *cobra.Command, args []string) {
 
 	// NATS streaming server
 	natsServer := nats.NewServer(nats.Config{FilestoreDir: walPath})
-
-	err = natsServer.Open()
-	if err != nil {
+	if err := natsServer.Open(); err != nil {
 		logger.Error("failed to start nats streaming server", zap.Error(err))
 		os.Exit(1)
 	}
 
-	publisher, err := nats.NewPublisher("nats-publisher")
-	if err != nil {
+	publisher := nats.NewPublisher("nats-publisher")
+	if err := publisher.Open(); err != nil {
 		logger.Error("failed to connect to streaming server", zap.Error(err))
 		os.Exit(1)
 	}
 
 	// TODO(jm): this is an example of using a subscriber to consume from the channel. It should be removed.
-	subscriber, err := nats.NewSubscriber("nats-subscriber")
+	subscriber := nats.NewSubscriber("nats-subscriber")
+	if err := subscriber.Open(); err != nil {
+		logger.Error("failed to connect to streaming server", zap.Error(err))
+		os.Exit(1)
+	}
+
 	if err := subscriber.Subscribe(NatsSubject, IngressGroup, &nats.LogHandler{Logger: logger}); err != nil {
 		logger.Error("failed to create nats subscriber", zap.Error(err))
 		os.Exit(1)

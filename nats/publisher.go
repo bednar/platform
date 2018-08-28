@@ -1,7 +1,6 @@
 package nats
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 
@@ -9,12 +8,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var ErrNoNatsConnection = errors.New("Nats connection has not been established. Call Open() first.")
-
 type Publisher interface {
 	// Open creates a connection to the nats server
 	Open() error
-	// Similar to Publish in nats
+	// Publish a new message to channel, asynchronously
 	Publish(subject string, r io.Reader) error
 }
 
@@ -25,8 +22,7 @@ type publisher struct {
 }
 
 func NewPublisher(clientID string) *publisher {
-	p := publisher{ClientID: clientID}
-	return &p
+	return &publisher{ClientID: clientID}
 }
 
 func (p *publisher) Open() error {

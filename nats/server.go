@@ -1,11 +1,15 @@
 package nats
 
 import (
+	"errors"
+
 	stand "github.com/nats-io/nats-streaming-server/server"
 	"github.com/nats-io/nats-streaming-server/stores"
 )
 
 const ServerName = "platform"
+
+var ErrNoNatsConnection = errors.New("Nats connection has not been established. Call Open() first.")
 
 // Server wraps a connection to a NATS streaming server
 type Server struct {
