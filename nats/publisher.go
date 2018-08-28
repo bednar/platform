@@ -34,11 +34,11 @@ func (p *publisher) Publish(subject string, r io.Reader) error {
 		}
 	}
 
-	octets, err := ioutil.ReadAll(r)
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
 	}
 
-	_, err = p.Connection.PublishAsync(subject, octets, ah)
+	_, err = p.Connection.PublishAsync(subject, data, ah)
 	return err
 }

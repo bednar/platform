@@ -2,6 +2,7 @@ package http
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,7 +36,7 @@ func NewWriteHandler(publishFn func(io.Reader) error) *WriteHandler {
 		Publish: publishFn,
 	}
 
-	h.HandlerFunc("POST", "/v1/organizations/:org_spec/buckets/:bucket_spec/write", h.handleWrite)
+	h.HandlerFunc("POST", "/v2/write", h.handleWrite)
 	return h
 }
 
@@ -66,22 +67,26 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ps := httprouter.ParamsFromContext(ctx)
-	orgSpec, bucketSpec := ps.ByName("org_spec"), ps.ByName("bucket_spec")
-	logger := h.Logger.With(zap.String("handler", "v2write"), zap.String("org_spec", orgSpec), zap.String("bucket_spec", bucketSpec))
+	req, err := decodeWriteRequest(ctx, r)
+	if err != nil {
+		EncodeError(ctx, err, w)
+		return
+	}
+
+	logger := h.Logger.With(zap.String("handler", "v2write"), zap.String("org", req.Org), zap.String("bucket", req.Bucket))
 
 	var org *platform.Organization
-	if id, err := platform.IDFromString(orgSpec); err == nil {
+	if id, err := platform.IDFromString(req.Org); err == nil {
 		// Decoded ID successfully. Make sure it's a real org.
 		if o, err := h.OrganizationService.FindOrganizationByID(ctx, *id); err == nil {
 			org = o
 		}
 	}
 	if org == nil {
-		o, err := h.OrganizationService.FindOrganization(ctx, platform.OrganizationFilter{Name: &orgSpec})
+		o, err := h.OrganizationService.FindOrganization(ctx, platform.OrganizationFilter{Name: &req.Org})
 		if err != nil {
 			logger.Info("Failed to find organization", zap.Error(err))
-			EncodeError(ctx, fmt.Errorf("organization %q not found", orgSpec), w)
+			EncodeError(ctx, fmt.Errorf("organization %q not found", req.Org), w)
 			return
 		}
 
@@ -89,7 +94,7 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var bucket *platform.Bucket
-	if id, err := platform.IDFromString(bucketSpec); err == nil {
+	if id, err := platform.IDFromString(req.Bucket); err == nil {
 		// Decoded ID successfully. Make sure it's a real bucket.
 		if b, err := h.BucketService.FindBucket(ctx, platform.BucketFilter{
 			OrganizationID: &org.ID,
@@ -102,11 +107,11 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 	if bucket == nil {
 		b, err := h.BucketService.FindBucket(ctx, platform.BucketFilter{
 			OrganizationID: &org.ID,
-			Name:           &bucketSpec,
+			Name:           &req.Bucket,
 		})
 		if err != nil {
 			logger.Info("Failed to find bucket", zap.Stringer("org_id", org.ID), zap.Error(err))
-			EncodeError(ctx, fmt.Errorf("bucket %q not found", bucketSpec), w)
+			EncodeError(ctx, fmt.Errorf("bucket %q not found", req.Bucket), w)
 			return
 		}
 
@@ -124,4 +129,17 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func decodeWriteRequest(ctx context.Context, r *http.Request) (*postWriteRequest, error) {
+	req := &postWriteRequest
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+type postWriteRequest struct {
+	Org    string `json: "org"`
+	Bucket string `json: "bucket"`
 }
