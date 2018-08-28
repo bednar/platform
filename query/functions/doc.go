@@ -26,14 +26,6 @@ The following registrations are typically executed in the function's init() for 
 	query.RegisterFunction(name string, c query.CreateOperationSpec, sig semantic.FunctionSignature)
 	query.RegisterOpSpec(k query.OperationKind, c query.NewOperationSpec)
 
-Refer to the documentation for more information. There, you will also find information two alternative registration functions:
-	query.RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionSignature)
-	query.RegisterBuiltIn(name, script string)
-
-Summarizing the query phase, a typical function implementation must instantiate and register a semantic.FunctionSignature,
-define and register an implementation of a query.OperationSpec, and implement the Kind(), createOperationSpec and newOperationSpec
-functions, which are all defined in the query package.
-
 In the plan phase, an operation spec must be converted to a plan.ProcedureSpec.  A query plan must know what operations to
 carry out, including the function names and parameters.    In the trivial case, the OperationSpec
 and ProcedureSpec have identical fields and the operation spec may be encapsulated as part of the procedure spec. The base
@@ -49,9 +41,11 @@ of the object.  Refer to the following interfaces for more information about des
 Once you have determined the interface(s) that must be implemented for your function, you register them with
 	plan.RegisterProcedureSpec(k ProcedureKind, c CreateProcedureSpec, qks ...query.OperationKind)
 
-A complete registration requires a definition of the function's Procedure Spec, a plan.CreateProcedureSpec function, and
-a query.OperationSpec.  One feature to note is that the registration takes a list of query.OperationSpec values. This is
-because several user-facing query functions may reduce to the same or similar internal procedure.
+The registration in this phase creates two lookups.  First, it creates a named lookup in a similar fashion as for OperationSpecs
+in the query phase.  Second, it creates a mapping from OperationSpec types to ProcedureSpec types so that the collection of
+OperationSpecs for the query can be quickly converted to corresponding Procedure specs.  One feature to note is that the
+registration takes a list of query.OperationSpec values. This is because several user-facing query functions may map
+to the same internal procedure.
 
 The primary function of the plan phase is to re-order, re-write and possibly combine the operations
 described in the incoming query in order to improve the performance of the query execution.  The planner has two primary
@@ -74,6 +68,8 @@ implementation registers an implementation of the  execute.Transformation interf
 control how the execution engine will take an input table, apply the function, and produce an output table.  A transformation
 implementation is registered via:
 	execute.RegisterTransformation(k plan.ProcedureKind, c execute.CreateTransformation)
+
+The registration will record a mapping of the procedure's kind to the given transformation type.
 
 In addition to implementing the transformation type, a number of helper types and functions are provided that facilitate
 the transformation process:

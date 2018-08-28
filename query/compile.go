@@ -162,7 +162,7 @@ func RegisterBuiltIn(name, script string) {
 
 // RegisterFunction adds a new builtin top level function.
 // Name is the name of the function as it would be called.
-// c is a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error).
+// c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
 func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionSignature) {
 	f := function{
@@ -176,9 +176,9 @@ func RegisterFunction(name string, c CreateOperationSpec, sig semantic.FunctionS
 
 // RegisterFunctionWithSideEffect adds a new builtin top level function that produces side effects.
 // For example, the builtin functions yield(), toKafka(), and toHTTP() all produce side effects.
-// name: the name of the function as it would be called
-// c: a function reference with the signature func(args Arguments, a *Administration) (OperationSpec, error)
-// sig: a function signature type that specifies the names and types of each argument for the function
+// name is the name of the function as it would be called
+// c is a function reference of type CreateOperationSpec
+// sig is a function signature type that specifies the names and types of each argument for the function
 func RegisterFunctionWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionSignature) {
 	f := function{
 		t:             semantic.NewFunctionType(sig),
