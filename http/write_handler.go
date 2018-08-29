@@ -73,7 +73,7 @@ func (h *WriteHandler) handleWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger := h.Logger.With(zap.String("handler", "v2write"), zap.String("org", req.Org), zap.String("bucket", req.Bucket))
+	logger := h.Logger.With(zap.String("org", req.Org), zap.String("bucket", req.Bucket))
 
 	var org *platform.Organization
 	if id, err := platform.IDFromString(req.Org); err == nil {
